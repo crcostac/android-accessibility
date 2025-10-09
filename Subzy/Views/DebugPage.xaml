@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Subzy.DebugPage"
+             Title="Debug">
+    
+    <Grid Padding="20" RowSpacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <Label Grid.Row="0"
+               Text="Debug Console" 
+               FontSize="32" 
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+
+        <!-- Test Input -->
+        <Frame Grid.Row="1" BorderColor="LightGray" HasShadow="True" Padding="15">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Test Input" FontSize="18" FontAttributes="Bold"/>
+                <Entry Text="{Binding TestText}"
+                       Placeholder="Enter text to test with"
+                       FontSize="16"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Debug Output -->
+        <Frame Grid.Row="2" BorderColor="LightGray" HasShadow="True" Padding="10">
+            <ScrollView>
+                <Label Text="{Binding DebugOutput}"
+                       FontFamily="Courier"
+                       FontSize="12"
+                       LineBreakMode="WordWrap"/>
+            </ScrollView>
+        </Frame>
+
+        <!-- Control Buttons -->
+        <Grid Grid.Row="3" ColumnSpacing="10" RowSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Row="0" Grid.Column="0"
+                    Text="Test OCR"
+                    Command="{Binding TestOcrCommand}"
+                    IsEnabled="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="Blue"
+                    TextColor="White"
+                    FontSize="16"/>
+
+            <Button Grid.Row="0" Grid.Column="1"
+                    Text="Test Translation"
+                    Command="{Binding TestTranslationCommand}"
+                    IsEnabled="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="Blue"
+                    TextColor="White"
+                    FontSize="16"/>
+
+            <Button Grid.Row="1" Grid.Column="0"
+                    Text="Test TTS"
+                    Command="{Binding TestTtsCommand}"
+                    IsEnabled="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="Blue"
+                    TextColor="White"
+                    FontSize="16"/>
+
+            <Button Grid.Row="1" Grid.Column="1"
+                    Text="View Logs"
+                    Command="{Binding ViewLogsCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    FontSize="16"/>
+        </Grid>
+
+    </Grid>
+</ContentPage>
