@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Subzy.MainPage"
+             Title="Subzy">
+
+    <Grid Padding="20" RowSpacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="10">
+            <Label Text="Subzy" 
+                   FontSize="48" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   SemanticProperties.HeadingLevel="Level1"/>
+            <Label Text="Subtitle Reader &amp; Translator" 
+                   FontSize="18"
+                   HorizontalOptions="Center"
+                   TextColor="Gray"/>
+        </VerticalStackLayout>
+
+        <!-- Status Area -->
+        <VerticalStackLayout Grid.Row="1" 
+                            Spacing="20"
+                            VerticalOptions="Center">
+            
+            <Frame BorderColor="LightGray" 
+                   HasShadow="True" 
+                   Padding="20"
+                   BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToBackgroundConverter}}">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="{Binding StatusText}"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           SemanticProperties.HeadingLevel="Level2"/>
+
+                    <Label Text="{Binding IsServiceRunning, StringFormat='Status: {0}'}"
+                           FontSize="16"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Last Processed Subtitle -->
+            <Frame BorderColor="LightGray" 
+                   HasShadow="True" 
+                   Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Last Processed Subtitle" 
+                           FontSize="18" 
+                           FontAttributes="Bold"/>
+                    <Label Text="{Binding LastProcessedText}"
+                           FontSize="16"
+                           LineBreakMode="WordWrap"
+                           TextColor="DarkSlateGray"/>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+
+        <!-- Control Buttons -->
+        <VerticalStackLayout Grid.Row="2" Spacing="15">
+            
+            <!-- Main Toggle Button -->
+            <Button Text="{Binding IsServiceRunning, Converter={StaticResource BoolToToggleTextConverter}}"
+                    Command="{Binding ToggleServiceCommand}"
+                    BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToToggleColorConverter}}"
+                    TextColor="White"
+                    HeightRequest="60"
+                    FontSize="22"
+                    FontAttributes="Bold"
+                    SemanticProperties.Hint="Toggles the subtitle reading service"/>
+
+            <!-- Quick Access Buttons -->
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                <Button Text="Settings"
+                        Command="{Binding NavigateToSettingsCommand}"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        WidthRequest="150"
+                        FontSize="16"/>
+
+                <Button Text="Debug"
+                        Command="{Binding NavigateToDebugCommand}"
+                        BackgroundColor="DarkSlateGray"
+                        TextColor="White"
+                        WidthRequest="150"
+                        FontSize="16"/>
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+
+    </Grid>
+
+</ContentPage>

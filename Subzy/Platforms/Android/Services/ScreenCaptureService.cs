@@ -1,0 +1,311 @@
+using Android.App;
+using Android.Content;
+using Android.Graphics;
+using Android.Hardware.Display;
+using Android.Media;
+using Android.Media.Projection;
+using Android.OS;
+using Android.Runtime;
+using Android.Views;
+using AndroidX.Core.App;
+using Subzy.Helpers;
+using Subzy.Services;
+using Subzy.Services.Interfaces;
+using System.IO;
+
+namespace Subzy.Platforms.Android.Services;
+
+/// <summary>
+/// Android foreground service that periodically captures screenshots for subtitle processing.
+/// </summary>
+[Service(ForegroundServiceType = global::Android.Content.PM.ForegroundService.TypeMediaProjection)]
+public class ScreenCaptureService : Service
+{
+    private ILoggingService? _logger;
+    private SettingsService? _settingsService;
+    private WorkflowOrchestrator? _orchestrator;
+    private Timer? _captureTimer;
+    private MediaProjectionManager? _projectionManager;
+    private MediaProjection? _mediaProjection;
+    private ImageReader? _imageReader;
+    private VirtualDisplay? _virtualDisplay;
+    private bool _isRunning;
+
+    public const string ActionStart = "com.accessibility.subzy.START_CAPTURE";
+    public const string ActionStop = "com.accessibility.subzy.STOP_CAPTURE";
+    public const string ExtraResultCode = "result_code";
+    public const string ExtraData = "data";
+
+    public override IBinder? OnBind(Intent? intent)
+    {
+        return null;
+    }
+
+    public override void OnCreate()
+    {
+        base.OnCreate();
+        
+        try
+        {
+            // Get services from the application's service provider
+            _logger = MauiApplication.Current.Services.GetService<ILoggingService>();
+            _settingsService = MauiApplication.Current.Services.GetService<SettingsService>();
+            _orchestrator = MauiApplication.Current.Services.GetService<WorkflowOrchestrator>();
+            
+            _logger?.Info("ScreenCaptureService created");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to initialize ScreenCaptureService: {ex.Message}");
+        }
+    }
+
+    [return: GeneratedEnum]
+    public override StartCommandResult OnStartCommand(Intent? intent, [GeneratedEnum] StartCommandFlags flags, int startId)
+    {
+        if (intent == null)
+            return StartCommandResult.NotSticky;
+
+        var action = intent.Action;
+        _logger?.Info($"ScreenCaptureService received action: {action}");
+
+        switch (action)
+        {
+            case ActionStart:
+                var resultCode = intent.GetIntExtra(ExtraResultCode, -1);
+                var data = intent.GetParcelableExtra(ExtraData) as Intent;
+                StartCapture(resultCode, data);
+                break;
+
+            case ActionStop:
+                StopCapture();
+                break;
+        }
+
+        return StartCommandResult.Sticky;
+    }
+
+    private void StartCapture(int resultCode, Intent? data)
+    {
+        if (_isRunning)
+        {
+            _logger?.Warning("Screen capture already running");
+            return;
+        }
+
+        try
+        {
+            // Start foreground service with notification
+            StartForeground(Constants.ForegroundServiceNotificationId, CreateNotification());
+
+            // Initialize media projection
+            _projectionManager = (MediaProjectionManager?)GetSystemService(MediaProjectionService);
+            if (_projectionManager == null || data == null)
+            {
+                _logger?.Error("Failed to get MediaProjectionManager or intent data");
+                StopSelf();
+                return;
+            }
+
+            _mediaProjection = _projectionManager.GetMediaProjection(resultCode, data);
+            if (_mediaProjection == null)
+            {
+                _logger?.Error("Failed to get MediaProjection");
+                StopSelf();
+                return;
+            }
+
+            // Set up screen capture
+            SetupScreenCapture();
+
+            // Start periodic capture timer
+            var settings = _settingsService?.LoadSettings();
+            var frequency = settings?.SnapshotFrequencySeconds ?? Constants.DefaultSnapshotFrequencySeconds;
+            
+            _captureTimer = new Timer(
+                async _ => await CaptureScreenshotAsync(),
+                null,
+                TimeSpan.Zero,
+                TimeSpan.FromSeconds(frequency)
+            );
+
+            _isRunning = true;
+            _logger?.Info($"Screen capture started with {frequency}s frequency");
+        }
+        catch (Exception ex)
+        {
+            _logger?.Error("Failed to start screen capture", ex);
+            StopSelf();
+        }
+    }
+
+    private void SetupScreenCapture()
+    {
+        try
+        {
+            var metrics = Resources?.DisplayMetrics;
+            if (metrics == null)
+            {
+                _logger?.Error("Failed to get display metrics");
+                return;
+            }
+
+            var width = metrics.WidthPixels;
+            var height = metrics.HeightPixels;
+            var density = (int)metrics.DensityDpi;
+
+            _imageReader = ImageReader.NewInstance(width, height, ImageFormatType.Rgb565, 2);
+            
+            _virtualDisplay = _mediaProjection?.CreateVirtualDisplay(
+                "SubzyCapture",
+                width,
+                height,
+                density,
+                DisplayFlags.None,
+                _imageReader?.Surface,
+                null,
+                null
+            );
+
+            _logger?.Info($"Screen capture setup completed: {width}x{height} @ {density}dpi");
+        }
+        catch (Exception ex)
+        {
+            _logger?.Error("Failed to setup screen capture", ex);
+        }
+    }
+
+    private async Task CaptureScreenshotAsync()
+    {
+        if (_imageReader == null)
+        {
+            _logger?.Warning("ImageReader not initialized");
+            return;
+        }
+
+        try
+        {
+            var image = _imageReader.AcquireLatestImage();
+            if (image == null)
+            {
+                _logger?.Debug("No image available");
+                return;
+            }
+
+            using (image)
+            {
+                var planes = image.GetPlanes();
+                if (planes == null || planes.Length == 0)
+                {
+                    _logger?.Warning("No image planes available");
+                    return;
+                }
+
+                var buffer = planes[0].Buffer;
+                if (buffer == null)
+                {
+                    _logger?.Warning("No buffer in image plane");
+                    return;
+                }
+
+                var bytes = new byte[buffer.Remaining()];
+                buffer.Get(bytes);
+
+                // Convert to bitmap and then to byte array
+                var bitmap = Bitmap.CreateBitmap(image.Width, image.Height, Bitmap.Config.Argb8888!);
+                buffer.Rewind();
+                bitmap.CopyPixelsFromBuffer(buffer);
+
+                using var stream = new MemoryStream();
+                await bitmap.CompressAsync(Bitmap.CompressFormat.Png!, 100, stream);
+                var imageBytes = stream.ToArray();
+
+                // Process through workflow
+                if (_orchestrator != null)
+                {
+                    await _orchestrator.ProcessScreenshotAsync(imageBytes);
+                }
+
+                bitmap.Recycle();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.Error("Failed to capture screenshot", ex);
+        }
+    }
+
+    private void StopCapture()
+    {
+        try
+        {
+            _isRunning = false;
+            
+            _captureTimer?.Dispose();
+            _captureTimer = null;
+
+            _virtualDisplay?.Release();
+            _virtualDisplay = null;
+
+            _imageReader?.Close();
+            _imageReader = null;
+
+            _mediaProjection?.Stop();
+            _mediaProjection = null;
+
+            StopForeground(true);
+            StopSelf();
+
+            _logger?.Info("Screen capture stopped");
+        }
+        catch (Exception ex)
+        {
+            _logger?.Error("Error stopping screen capture", ex);
+        }
+    }
+
+    private Notification CreateNotification()
+    {
+        var channelId = Constants.ForegroundServiceChannelId;
+        
+        // Create notification channel for Android O and above
+        if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+        {
+            var channel = new NotificationChannel(
+                channelId,
+                Constants.ForegroundServiceChannelName,
+                NotificationImportance.Low
+            )
+            {
+                Description = "Shows when Subzy is actively reading subtitles"
+            };
+
+            var notificationManager = (NotificationManager?)GetSystemService(NotificationService);
+            notificationManager?.CreateNotificationChannel(channel);
+        }
+
+        var notificationIntent = new Intent(this, typeof(MainActivity));
+        var pendingIntent = PendingIntent.GetActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntentFlags.Immutable
+        );
+
+        var notification = new NotificationCompat.Builder(this, channelId)
+            .SetContentTitle("Subzy Active")
+            .SetContentText("Reading subtitles in the background")
+            .SetSmallIcon(global::Android.Resource.Drawable.IcMenuCamera)
+            .SetContentIntent(pendingIntent)
+            .SetOngoing(true)
+            .Build();
+
+        return notification!;
+    }
+
+    public override void OnDestroy()
+    {
+        StopCapture();
+        base.OnDestroy();
+    }
+}

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Subzy.SettingsPage"
+             Title="Settings">
+    
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            
+            <Label Text="Settings" 
+                   FontSize="32" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" 
+                   Margin="0,0,0,20"/>
+
+            <!-- Service Configuration -->
+            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Service Configuration" FontSize="20" FontAttributes="Bold"/>
+                    
+                    <Label Text="Snapshot Frequency (seconds)"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <Slider x:Name="FrequencySlider"
+                                Value="{Binding SnapshotFrequency}"
+                                Minimum="1"
+                                Maximum="10"
+                                WidthRequest="250"
+                                VerticalOptions="Center"/>
+                        <Label Text="{Binding SnapshotFrequency, StringFormat='{0:F0}s'}"
+                               VerticalOptions="Center"
+                               FontSize="18"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Image Processing -->
+            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Image Processing" FontSize="20" FontAttributes="Bold"/>
+                    
+                    <Label Text="Brightness"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <Slider Value="{Binding Brightness}"
+                                Minimum="0.5"
+                                Maximum="2.0"
+                                WidthRequest="250"
+                                VerticalOptions="Center"/>
+                        <Label Text="{Binding Brightness, StringFormat='{0:F2}'}"
+                               VerticalOptions="Center"
+                               FontSize="18"/>
+                    </HorizontalStackLayout>
+                    
+                    <Label Text="Contrast"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <Slider Value="{Binding Contrast}"
+                                Minimum="0.5"
+                                Maximum="2.0"
+                                WidthRequest="250"
+                                VerticalOptions="Center"/>
+                        <Label Text="{Binding Contrast, StringFormat='{0:F2}'}"
+                               VerticalOptions="Center"
+                               FontSize="18"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Translation Settings -->
+            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Translation" FontSize="20" FontAttributes="Bold"/>
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Enable Translation" VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding IsTranslationEnabled}" />
+                    </HorizontalStackLayout>
+                    
+                    <Label Text="Target Language"/>
+                    <Entry Text="{Binding TargetLanguage}" 
+                           Placeholder="e.g., ro for Romanian"
+                           FontSize="16"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- TTS Settings -->
+            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Text-to-Speech" FontSize="20" FontAttributes="Bold"/>
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Enable TTS" VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding IsTtsEnabled}" />
+                    </HorizontalStackLayout>
+                    
+                    <Label Text="Voice"/>
+                    <Picker ItemsSource="{Binding AvailableVoices}"
+                            SelectedItem="{Binding TtsVoice}"
+                            FontSize="16"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Azure Configuration -->
+            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Azure Configuration" FontSize="20" FontAttributes="Bold"/>
+                    <Label Text="Get your API keys from Azure Portal" 
+                           FontSize="12" 
+                           TextColor="Gray"/>
+                    
+                    <Label Text="Translator API Key"/>
+                    <Entry Text="{Binding AzureTranslatorKey}" 
+                           IsPassword="True"
+                           Placeholder="Enter Azure Translator key"
+                           FontSize="16"/>
+                    
+                    <Label Text="Speech API Key"/>
+                    <Entry Text="{Binding AzureSpeechKey}" 
+                           IsPassword="True"
+                           Placeholder="Enter Azure Speech key"
+                           FontSize="16"/>
+                    
+                    <Button Text="Open Azure Portal"
+                            Command="{Binding OpenAzurePortalCommand}"
+                            BackgroundColor="LightBlue"
+                            TextColor="Black"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Resource Management -->
+            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Resource Management" FontSize="20" FontAttributes="Bold"/>
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Adaptive Scheduling" VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding AdaptiveScheduling}" />
+                    </HorizontalStackLayout>
+                    
+                    <Label Text="Low Battery Threshold (%)"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <Slider Value="{Binding LowBatteryThreshold}"
+                                Minimum="10"
+                                Maximum="50"
+                                WidthRequest="250"
+                                VerticalOptions="Center"/>
+                        <Label Text="{Binding LowBatteryThreshold, StringFormat='{0:F0}%'}"
+                               VerticalOptions="Center"
+                               FontSize="18"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Action Buttons -->
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,20,0,0">
+                <Button Text="Save Settings"
+                        Command="{Binding SaveSettingsCommand}"
+                        BackgroundColor="Green"
+                        TextColor="White"
+                        WidthRequest="150"
+                        HeightRequest="50"
+                        FontSize="18"/>
+                
+                <Button Text="Reset"
+                        Command="{Binding ResetSettingsCommand}"
+                        BackgroundColor="Orange"
+                        TextColor="White"
+                        WidthRequest="150"
+                        HeightRequest="50"
+                        FontSize="18"/>
+            </HorizontalStackLayout>
+
+            <!-- Test Buttons -->
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                <Button Text="Test Translation"
+                        Command="{Binding TestTranslationCommand}"
+                        BackgroundColor="LightBlue"
+                        TextColor="Black"
+                        WidthRequest="150"/>
+                
+                <Button Text="Test TTS"
+                        Command="{Binding TestTtsCommand}"
+                        BackgroundColor="LightBlue"
+                        TextColor="Black"
+                        WidthRequest="150"/>
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

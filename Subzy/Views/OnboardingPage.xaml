@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Subzy.OnboardingPage"
+             Title="Welcome"
+             Shell.NavBarIsVisible="False">
+    
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Content Area -->
+        <VerticalStackLayout Grid.Row="0" 
+                            Spacing="30"
+                            VerticalOptions="Center">
+            
+            <Label Text="{Binding CurrentStepTitle}"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+
+            <Label Text="{Binding CurrentStepDescription}"
+                   FontSize="18"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   LineBreakMode="WordWrap"/>
+
+            <!-- Progress Indicator -->
+            <HorizontalStackLayout Spacing="10" 
+                                  HorizontalOptions="Center"
+                                  Margin="0,20,0,0">
+                <Label Text="{Binding CurrentStep, StringFormat='Step {0}'}"
+                       FontSize="16"/>
+                <Label Text="of"
+                       FontSize="16"/>
+                <Label Text="{Binding TotalSteps}"
+                       FontSize="16"/>
+            </HorizontalStackLayout>
+
+            <!-- Permission Status (visible only on permissions step) -->
+            <Frame BorderColor="LightGray" 
+                   HasShadow="True" 
+                   Padding="15"
+                   IsVisible="{Binding CurrentStep, Converter={StaticResource IntToBoolConverter}, ConverterParameter=3}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Permission Status" FontSize="18" FontAttributes="Bold"/>
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Screen Capture:" WidthRequest="150"/>
+                        <Label Text="{Binding PermissionStatus.HasScreenCapturePermission, StringFormat='{0}'}"
+                               TextColor="{Binding PermissionStatus.HasScreenCapturePermission, Converter={StaticResource BoolToColorConverter}}"/>
+                    </HorizontalStackLayout>
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Internet:" WidthRequest="150"/>
+                        <Label Text="{Binding PermissionStatus.HasInternetPermission, StringFormat='{0}'}"
+                               TextColor="{Binding PermissionStatus.HasInternetPermission, Converter={StaticResource BoolToColorConverter}}"/>
+                    </HorizontalStackLayout>
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Foreground Service:" WidthRequest="150"/>
+                        <Label Text="{Binding PermissionStatus.HasForegroundServicePermission, StringFormat='{0}'}"
+                               TextColor="{Binding PermissionStatus.HasForegroundServicePermission, Converter={StaticResource BoolToColorConverter}}"/>
+                    </HorizontalStackLayout>
+
+                    <Button Text="Request Permissions"
+                            Command="{Binding RequestPermissionsCommand}"
+                            BackgroundColor="Blue"
+                            TextColor="White"
+                            Margin="0,10,0,0"/>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+
+        <!-- Navigation Buttons -->
+        <HorizontalStackLayout Grid.Row="1" 
+                              Spacing="10"
+                              HorizontalOptions="Center"
+                              Margin="0,20,0,20">
+            
+            <Button Text="Previous"
+                    Command="{Binding PreviousStepCommand}"
+                    IsEnabled="{Binding CurrentStep, Converter={StaticResource IntToBoolConverter}, ConverterParameter='gt0'}"
+                    WidthRequest="120"
+                    HeightRequest="50"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    FontSize="18"/>
+
+            <Button Text="{Binding CurrentStep, Converter={StaticResource StepToButtonTextConverter}, ConverterParameter={Binding TotalSteps}}"
+                    Command="{Binding NextStepCommand}"
+                    IsEnabled="{Binding CanProceed}"
+                    WidthRequest="120"
+                    HeightRequest="50"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    FontSize="18"/>
+
+            <Button Text="Skip"
+                    Command="{Binding SkipOnboardingCommand}"
+                    WidthRequest="120"
+                    HeightRequest="50"
+                    BackgroundColor="Orange"
+                    TextColor="White"
+                    FontSize="18"/>
+        </HorizontalStackLayout>
+
+    </Grid>
+</ContentPage>

@@ -1,0 +1,24 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Subzy"
+             xmlns:helpers="clr-namespace:Subzy.Helpers"
+             x:Class="Subzy.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Value Converters -->
+            <helpers:BoolToColorConverter x:Key="BoolToColorConverter" />
+            <helpers:BoolToBackgroundConverter x:Key="BoolToBackgroundConverter" />
+            <helpers:BoolToToggleTextConverter x:Key="BoolToToggleTextConverter" />
+            <helpers:BoolToToggleColorConverter x:Key="BoolToToggleColorConverter" />
+            <helpers:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+            <helpers:IntToBoolConverter x:Key="IntToBoolConverter" />
+            <helpers:StepToButtonTextConverter x:Key="StepToButtonTextConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
