@@ -7,9 +7,9 @@ The purpose of this project is to develop an Android application, primarily desi
 ## Core Features
 
 - **Subtitle Reading:** Use Tesseract OCR (Optical Character Recognition) to capture and read subtitles directly from the screen image, independent of app accessibility APIs.
-- **Translation:** Translate subtitles from English to Romanian (primary), with extensibility for other languages. Focus on AI-based translation models that can take context into account (e.g., Marian NMT, OpenNMT, Microsoft/Google APIs).
-- **Text-to-Speech:** Speak subtitles aloud using Romanian as the primary voice. Prioritize AI-based TTS for expressive, natural speech inflexion (e.g., Coqui TTS, Azure/Google neural TTS).
-- **Local AI Engines:** Prefer local (on-device) AI models for OCR and Text-to-Speech to maintain privacy and offline functionality; cloud-based options (Microsoft, Google) may be considered for improved quality/latency and will be evaluated for cost.
+- **Translation:** Translate subtitles from English to Romanian (primary), with extensibility for other languages. Use cloud-based translation via Microsoft Azure Translator for high-quality, low-latency, context-aware results.
+- **Text-to-Speech:** Speak subtitles aloud using Romanian as the primary voice. Use cloud-based neural TTS via Microsoft Azure for expressive, natural speech inflexion.
+- **Cloud AI Engines:** Use cloud-based AI models for translation and text-to-speech to maximize quality and reduce device resource requirements.
 - **Multi-application Support:** Work across various streaming apps (Netflix, HBO, Amazon Prime, etc.) regardless of their accessibility support by reading pixels from the screen.
 - **Permissions:** Accept the need for full administrator or accessibility permissions to capture the displayed image on the device.
 - **Development Framework:** Use C# with .NET MAUI for cross-platform Android development.
@@ -20,9 +20,9 @@ The purpose of this project is to develop an Android application, primarily desi
 
 ## Exploration Areas
 
-- Compare available local AI models for OCR and Text-to-Speech on Android devices (including Coqui TTS for Romanian).
+- Compare available local AI models for OCR on Android devices.
 - Investigate Android OS capabilities for screen capture, especially on Android TV and phones, including permission requirements and limitations.
-- Explore translation model options for on-device or cloud-based translation, evaluating both cost (for cloud) and performance (for local).
+- Explore cloud-based translation and text-to-speech options, evaluating cost and integration strategies.
 - Assess potential challenges in supporting streaming apps and handling DRM or protected content.
 
 ## Next Steps
