@@ -6,6 +6,7 @@ The purpose of this project is to develop an Android application, primarily desi
 
 ## Core Features
 
+- **Name:** Subzy will be the name of the project and of the installed app.
 - **Subtitle Reading:** Use Tesseract OCR (Optical Character Recognition) to capture and read subtitles directly from the screen image, independent of app accessibility APIs.
 - **Translation:** Translate subtitles from English to Romanian (primary), with extensibility for other languages. Use cloud-based translation via Microsoft Azure Translator for high-quality, low-latency translations.
 - **Text-to-Speech:** Speak subtitles aloud using Romanian as the primary voice. Use cloud-based neural TTS via Microsoft Azure for expressive, natural speech inflexion.
