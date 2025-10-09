@@ -1,0 +1,40 @@
+name: Build Subzy Android App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Install .NET MAUI workload
+      run: dotnet workload install maui
+      
+    - name: Restore dependencies
+      run: dotnet restore Subzy/Subzy.csproj
+      
+    - name: Build Android App
+      run: dotnet build Subzy/Subzy.csproj -c Release -f net9.0-android
+      
+    - name: Publish Android APK
+      run: dotnet publish Subzy/Subzy.csproj -c Release -f net9.0-android -o ./output
+      
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: subzy-android-apk
+        path: ./output/**/*.apk
+        retention-days: 30
