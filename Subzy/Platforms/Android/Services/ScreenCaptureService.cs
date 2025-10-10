@@ -33,6 +33,7 @@ public class ScreenCaptureService : Service
 
     public const string ActionStart = "com.accessibility.subzy.START_CAPTURE";
     public const string ActionStop = "com.accessibility.subzy.STOP_CAPTURE";
+    public const string ActionPickColor = "com.accessibility.subzy.PICK_COLOR";
     public const string ExtraResultCode = "result_code";
     public const string ExtraData = "data";
 
@@ -79,6 +80,10 @@ public class ScreenCaptureService : Service
 
             case ActionStop:
                 StopCapture();
+                break;
+
+            case ActionPickColor:
+                LaunchColorPicker();
                 break;
         }
 
@@ -235,6 +240,67 @@ public class ScreenCaptureService : Service
         }
     }
 
+    private void LaunchColorPicker()
+    {
+        try
+        {
+            _logger?.Info("Launching color picker");
+
+            // Capture current screenshot
+            if (_imageReader == null)
+            {
+                _logger?.Warning("Cannot launch color picker: ImageReader not initialized");
+                return;
+            }
+
+            var image = _imageReader.AcquireLatestImage();
+            if (image == null)
+            {
+                _logger?.Warning("Cannot launch color picker: No image available");
+                return;
+            }
+
+            byte[] screenshotBytes;
+            using (image)
+            {
+                var planes = image.GetPlanes();
+                if (planes == null || planes.Length == 0)
+                {
+                    _logger?.Warning("No image planes available for color picker");
+                    return;
+                }
+
+                var buffer = planes[0].Buffer;
+                if (buffer == null)
+                {
+                    _logger?.Warning("No buffer in image plane for color picker");
+                    return;
+                }
+
+                var bitmap = Bitmap.CreateBitmap(image.Width, image.Height, Bitmap.Config.Argb8888!);
+                buffer.Rewind();
+                bitmap.CopyPixelsFromBuffer(buffer);
+
+                using var stream = new MemoryStream();
+                bitmap.Compress(Bitmap.CompressFormat.Png!, 100, stream);
+                screenshotBytes = stream.ToArray();
+                bitmap.Recycle();
+            }
+
+            // Launch ColorPickerActivity with screenshot
+            var intent = new Intent(this, typeof(ColorPickerActivity));
+            intent.SetAction(ColorPickerActivity.ActionPickColor);
+            intent.PutExtra(ColorPickerActivity.ExtraScreenshotData, screenshotBytes);
+            intent.SetFlags(ActivityFlags.NewTask);
+            
+            StartActivity(intent);
+        }
+        catch (Exception ex)
+        {
+            _logger?.Error("Failed to launch color picker", ex);
+        }
+    }
+
     private void StopCapture()
     {
         try
@@ -292,11 +358,25 @@ public class ScreenCaptureService : Service
             PendingIntentFlags.Immutable
         );
 
+        // Create "Pick Color" action
+        var pickColorIntent = new Intent(this, typeof(ScreenCaptureService));
+        pickColorIntent.SetAction(ActionPickColor);
+        var pickColorPendingIntent = PendingIntent.GetService(
+            this,
+            1,
+            pickColorIntent,
+            PendingIntentFlags.Immutable
+        );
+
         var notification = new NotificationCompat.Builder(this, channelId)
             .SetContentTitle("Subzy Active")
             .SetContentText("Reading subtitles in the background")
             .SetSmallIcon(global::Android.Resource.Drawable.IcMenuCamera)
             .SetContentIntent(pendingIntent)
+            .AddAction(
+                global::Android.Resource.Drawable.IcMenuEdit,
+                "Pick Color",
+                pickColorPendingIntent)
             .SetOngoing(true)
             .Build();
 

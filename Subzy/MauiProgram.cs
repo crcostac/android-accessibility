@@ -35,6 +35,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ITtsService, AzureTtsService>();
 		builder.Services.AddSingleton<ForegroundAppDetector>();
 		builder.Services.AddSingleton<ColorProfileManager>();
+		builder.Services.AddSingleton<ColorPickerService>();
 		builder.Services.AddSingleton<WorkflowOrchestrator>();
 		builder.Services.AddSingleton<PermissionHelper>();
 
