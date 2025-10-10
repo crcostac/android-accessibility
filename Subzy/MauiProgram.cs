@@ -33,6 +33,8 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IOcrService, TesseractOcrService>();
 		builder.Services.AddSingleton<ITranslationService, AzureTranslatorService>();
 		builder.Services.AddSingleton<ITtsService, AzureTtsService>();
+		builder.Services.AddSingleton<ForegroundAppDetector>();
+		builder.Services.AddSingleton<ColorProfileManager>();
 		builder.Services.AddSingleton<WorkflowOrchestrator>();
 		builder.Services.AddSingleton<PermissionHelper>();
 
