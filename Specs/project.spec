@@ -58,18 +58,21 @@ The following are the major code components and logic required for the implement
    - Use platform-appropriate storage APIs (e.g., Xamarin.Essentials Preferences, local SQLite, or .NET MAUI Preferences API).
    - Load preferences at startup and apply them to UI and services.
 
-5. **Workflow Classes**
-   - Logic for the main workflow:
-     - Take screenshot
-     - Apply image post-processing to enhance subtitle region
-     - Detect changes (compare current image with previous to avoid redundant OCR)
-     - If image is different, apply OCR to extract text
-     - Translate extracted text if needed
-     - Apply TTS to the final output
+5. **Optimized 5-Stage OCR Workflow**
+   - **Stage 1: Detect Foreground App (~1ms)** - Uses UsageStatsManager to detect active app and load associated color profile
+   - **Stage 2: Color Filter + Noise Removal (~20-25ms)** - Single-pass algorithm that filters subtitle colors and removes noise based on neighbor analysis
+   - **Stage 3: Perceptual Hashing (~10ms)** - Uses dHash algorithm to detect changes; skips OCR if Hamming distance < threshold
+   - **Stage 4: Run OCR (~200-500ms)** - Only executed if hash indicates content changed; runs Tesseract on filtered image
+   - **Stage 5: Translation & TTS** - Existing logic for Azure Translator and Neural TTS
+   - **Performance:** Expected ~90% reduction in OCR operations (36ms vs 236-536ms per frame)
 
-6. **Subtitle Region Detection**
-   - Logic to specify or automatically detect the region of interest (ROI) for subtitles within the captured image.
-   - Optionally allow user configuration for region selection in the UI.
+6. **Per-App Color Profile System**
+   - **Color Profile Manager** - Manages dictionary of app package → color profile mappings
+   - **Foreground App Detection** - Uses UsageStatsManager API to detect currently active streaming app
+   - **MRU Color List** - Each app maintains up to 5 subtitle colors in Most Recently Used order
+   - **Interactive Color Picker** - Semi-transparent overlay with tap-to-pick functionality using histogram analysis
+   - **Automatic Profile Switching** - System automatically switches profiles when user changes apps
+   - **Profile Persistence** - Color profiles saved to JSON storage via SettingsService
 
 7. **Wrappers for External Services**
    - **Tesseract OCR Wrapper:** Encapsulate interaction with Tesseract library for local OCR processing. Expose simple API for image-to-text conversion.
