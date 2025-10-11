@@ -63,6 +63,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Android-specific partial implementation of MainViewModel for platform service control
 - Added MediaProjectionCallback to respond to system MediaProjection stop events
 - Added VirtualDisplayCallback for logging VirtualDisplay lifecycle events (pause/resume/stop)
+- Migrated to Google ML Kit Text Recognition v2 for OCR
+- Added automatic language detection in OCR results
+- New MlKitOcrService with LastDetectedLanguage property for lightweight language inference
+
+### Changed
+- Replaced Tesseract OCR with Google ML Kit Text Recognition v2
+- Updated OCR implementation to use on-device ML Kit processing
+- Improved OCR speed and accuracy with ML Kit's optimized text recognition
+- Enhanced multi-language support (Latin scripts including Romanian) without traineddata files
+- Diacritics now preserved natively by ML Kit
+
+### Removed
+- Removed Tesseract NuGet package dependency
+- Removed TesseractOcrService implementation (deprecated)
+- Removed traineddata file management requirement
 
 ### Fixed
 - Fixed IllegalStateException "Must register a callback before starting capture" on Android 14+ by registering MediaProjection.Callback before creating VirtualDisplay

@@ -30,7 +30,12 @@ public static class MauiProgram
 		builder.Services.AddSingleton<SettingsService>();
 		builder.Services.AddSingleton<IImageProcessor, ImageProcessorService>();
 		builder.Services.AddSingleton<ChangeDetectorService>();
+#if ANDROID
+		builder.Services.AddSingleton<IOcrService, Platforms.Android.Services.MlKitOcrService>();
+#else
+		// No OCR service available for other platforms
 		builder.Services.AddSingleton<IOcrService, TesseractOcrService>();
+#endif
 		builder.Services.AddSingleton<ITranslationService, AzureTranslatorService>();
 		builder.Services.AddSingleton<ITtsService, AzureTtsService>();
 		builder.Services.AddSingleton<ForegroundAppDetector>();

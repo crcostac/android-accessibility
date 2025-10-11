@@ -5,7 +5,7 @@ Subzy is an Android accessibility application designed to enhance the viewing ex
 ## Features
 
 - **Real-time Subtitle Capture**: Periodically captures screenshots to extract subtitle text
-- **OCR Processing**: Uses Tesseract OCR to read subtitles from screen images
+- **OCR Processing**: Uses Google ML Kit Text Recognition v2 for fast, on-device text extraction
 - **Translation**: Translates subtitles from English to Romanian (extensible to other languages)
 - **Text-to-Speech**: Speaks subtitles aloud using Azure Neural TTS with natural inflection
 - **Multi-Application Support**: Works across various streaming apps (Netflix, HBO, Prime Video, etc.)
@@ -112,7 +112,7 @@ dotnet build -c Release -f net9.0-android -t:Run
 
 ### Supported Languages
 
-**OCR**: English (extensible to other languages with appropriate Tesseract data files)
+**OCR**: Multi-language support via ML Kit (Latin script including English, Romanian, Spanish, French, German, and more)
 
 **Translation Target**: Romanian (primary), with extensibility for additional languages
 
@@ -140,9 +140,11 @@ Subzy requires the following permissions:
 ## Troubleshooting
 
 ### OCR Not Working
-- Ensure Tesseract trained data files are present in the app's data directory
-- Check that subtitles are clearly visible on screen
+- Ensure subtitles are clearly visible on screen with good contrast
+- ML Kit automatically initializes on first use
+- Check that subtitles use Latin script (supported by ML Kit Text Recognition v2)
 - Adjust brightness/contrast settings for better recognition
+- Verify Google Play Services are installed and up-to-date on the device
 
 ### Translation Failing
 - Verify Azure Translator API key is correct
@@ -171,8 +173,10 @@ Access the Debug page to:
 
 - DRM-protected content may prevent screen capture on some devices
 - OCR accuracy depends on subtitle quality and font clarity
+- OCR requires Google Play Services for ML Kit functionality
 - Translation requires internet connection
 - Battery consumption increases during active use
+- ML Kit Text Recognition currently supports Latin script languages
 
 ## Contributing
 
@@ -190,7 +194,7 @@ For issues, questions, or feedback:
 
 ## Acknowledgments
 
-- Tesseract OCR for text recognition
+- Google ML Kit for fast, on-device text recognition
 - Azure Cognitive Services for translation and TTS
 - .NET MAUI team for the cross-platform framework
 - Community Toolkit for MAUI helpers

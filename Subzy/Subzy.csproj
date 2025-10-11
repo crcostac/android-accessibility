@@ -50,8 +50,8 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Azure.AI.Translation.Text" Version="1.0.0" />
 		<PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.41.1" />
-		<PackageReference Include="Tesseract" Version="5.2.0" />
 		<PackageReference Include="SkiaSharp" Version="2.88.8" />
+		<PackageReference Include="Xamarin.GooglePlayServices.MLKit.Text.Recognition" Version="119.0.1.5" />
 	</ItemGroup>
 
 </Project>
