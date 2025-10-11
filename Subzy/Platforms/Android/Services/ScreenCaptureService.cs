@@ -165,7 +165,7 @@ public class ScreenCaptureService : Service
             var height = metrics.HeightPixels;
             var density = (int)metrics.DensityDpi;
 
-            _imageReader = ImageReader.NewInstance(width, height, ImageFormatType.Rgb565, 2);
+            _imageReader = ImageReader.NewInstance(width, height, (ImageFormatType)0x1, 2);
             
             try
             {
@@ -195,8 +195,16 @@ public class ScreenCaptureService : Service
         }
     }
 
+    bool IsProcessingScreenCapture = false;
     private async Task CaptureScreenshotAsync()
     {
+        if (IsProcessingScreenCapture)
+        {
+            _logger?.Debug("Previous screenshot processing still ongoing, skipping this cycle");
+            return;
+        }
+        IsProcessingScreenCapture = true;
+
         if (_imageReader == null)
         {
             _logger?.Warning("ImageReader not initialized");
@@ -252,6 +260,10 @@ public class ScreenCaptureService : Service
         catch (Exception ex)
         {
             _logger?.Error("Failed to capture screenshot", ex);
+        }
+        finally
+        {
+            IsProcessingScreenCapture = false;
         }
     }
 
