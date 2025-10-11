@@ -130,4 +130,19 @@ public class AzureTtsService : ITtsService
         _synthesizer = null;
         IsConfigured = false;
     }
+
+    /// <summary>
+    /// Reinitializes the TTS synthesizer with updated settings.
+    /// Use this after changing API keys to apply the new credentials.
+    /// </summary>
+    public void Reinitialize()
+    {
+        _logger.Info("Reinitializing Azure TTS service");
+        if (_synthesizer != null)
+        {
+            _synthesizer.Dispose();
+            _synthesizer = null;
+        }
+        InitializeSynthesizer();
+    }
 }
