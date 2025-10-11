@@ -14,6 +14,8 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly ILoggingService _logger;
     private readonly SettingsService _settingsService;
+    private readonly ITranslationService _translationService;
+    private readonly ITtsService _ttsService;
     private AppSettings _settings;
 
     [ObservableProperty]
@@ -51,10 +53,16 @@ public partial class SettingsViewModel : ObservableObject
 
     public List<string> AvailableVoices { get; } = new(Constants.RomanianVoices);
 
-    public SettingsViewModel(ILoggingService logger, SettingsService settingsService)
+    public SettingsViewModel(
+        ILoggingService logger, 
+        SettingsService settingsService,
+        ITranslationService translationService,
+        ITtsService ttsService)
     {
         _logger = logger;
         _settingsService = settingsService;
+        _translationService = translationService;
+        _ttsService = ttsService;
         _settings = _settingsService.LoadSettings();
         
         LoadSettings();
@@ -157,16 +165,53 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
+            // Save current settings before testing
             SaveSettings();
+            
+            // Check if translation service is configured
+            if (!_translationService.IsConfigured)
+            {
+                await Application.Current!.MainPage!.DisplayAlert(
+                    "Translation Not Configured",
+                    "Translation service not configured. Please add Azure Translator key in Settings.",
+                    "OK"
+                );
+                return;
+            }
+
+            // Use sample text
+            var testText = "Hello, this is a translation test.";
+            var settings = _settingsService.LoadSettings();
+            
+            // Show testing message
             await Application.Current!.MainPage!.DisplayAlert(
-                "Test Translation",
-                "Translation test would be performed here with current settings",
+                "Testing Translation",
+                $"Translating: \"{testText}\"\nTarget Language: {settings.TargetLanguage}",
+                "OK"
+            );
+
+            // Perform translation
+            var (translated, detected) = await _translationService.TranslateAsync(
+                testText,
+                settings.TargetLanguage,
+                "en"
+            );
+            
+            // Show result
+            await Application.Current!.MainPage!.DisplayAlert(
+                "Translation Test Result",
+                $"Original: {testText}\n\nDetected Language: {detected}\n\nTranslated: {translated}",
                 "OK"
             );
         }
         catch (Exception ex)
         {
             _logger.Error("Failed to test translation", ex);
+            await Application.Current!.MainPage!.DisplayAlert(
+                "Translation Test Error",
+                $"Error: {ex.Message}",
+                "OK"
+            );
         }
     }
 
@@ -175,16 +220,49 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
+            // Save current settings before testing
             SaveSettings();
+            
+            // Check if TTS service is configured
+            if (!_ttsService.IsConfigured)
+            {
+                await Application.Current!.MainPage!.DisplayAlert(
+                    "TTS Not Configured",
+                    "TTS service not configured. Please add Azure Speech key in Settings.",
+                    "OK"
+                );
+                return;
+            }
+
+            // Use sample text
+            var testText = "This is a text-to-speech test.";
+            var settings = _settingsService.LoadSettings();
+            
+            // Show what will be spoken
             await Application.Current!.MainPage!.DisplayAlert(
-                "Test TTS",
-                "Text-to-speech test would be performed here with current settings",
+                "Testing TTS",
+                $"Speaking: \"{testText}\"\nVoice: {settings.TtsVoice}",
+                "OK"
+            );
+
+            // Actually speak the text
+            await _ttsService.SpeakAsync(testText, settings.TtsVoice);
+            
+            // Show success message
+            await Application.Current!.MainPage!.DisplayAlert(
+                "TTS Test Complete",
+                "Text-to-speech test completed successfully.",
                 "OK"
             );
         }
         catch (Exception ex)
         {
             _logger.Error("Failed to test TTS", ex);
+            await Application.Current!.MainPage!.DisplayAlert(
+                "TTS Test Error",
+                $"Error: {ex.Message}",
+                "OK"
+            );
         }
     }
 }
