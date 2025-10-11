@@ -17,12 +17,16 @@
                Text="Debug Console" 
                FontSize="32" 
                FontAttributes="Bold"
+               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                HorizontalOptions="Center"/>
 
         <!-- Test Input -->
         <Frame Grid.Row="1" BorderColor="LightGray" HasShadow="True" Padding="15">
             <VerticalStackLayout Spacing="10">
-                <Label Text="Test Input" FontSize="18" FontAttributes="Bold"/>
+                <Label Text="Test Input" 
+                       FontSize="18" 
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                 <Entry Text="{Binding TestText}"
                        Placeholder="Enter text to test with"
                        FontSize="16"/>
@@ -35,6 +39,7 @@
                 <Label Text="{Binding DebugOutput}"
                        FontFamily="Courier"
                        FontSize="12"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                        LineBreakMode="WordWrap"/>
             </ScrollView>
         </Frame>
