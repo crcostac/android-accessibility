@@ -56,15 +56,15 @@ public partial class MainViewModel : ObservableObject
             
             if (IsServiceRunning)
             {
-                // TODO: Start the Android service
                 StatusText = "Service starting...";
                 _logger.Info("Screen capture service start requested");
+                StartPlatformService();
             }
             else
             {
-                // TODO: Stop the Android service
                 StatusText = "Service stopped";
                 _logger.Info("Screen capture service stop requested");
+                StopPlatformService();
             }
             
             UpdateStatusText();
@@ -124,4 +124,14 @@ public partial class MainViewModel : ObservableObject
             StatusText = "Service is stopped - Tap to start";
         }
     }
+
+    /// <summary>
+    /// Platform-specific implementation for starting the service.
+    /// </summary>
+    partial void StartPlatformService();
+
+    /// <summary>
+    /// Platform-specific implementation for stopping the service.
+    /// </summary>
+    partial void StopPlatformService();
 }
