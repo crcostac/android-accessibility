@@ -5,7 +5,7 @@ Subzy is an Android accessibility application designed to enhance the viewing ex
 ## Features
 
 - **Real-time Subtitle Capture**: Periodically captures screenshots to extract subtitle text
-- **OCR Processing**: Uses Tesseract OCR to read subtitles from screen images (with Tesseract4Android integration support for native Android performance)
+- **OCR Processing**: Uses Tesseract4Android for native Android OCR performance
 - **Translation**: Translates subtitles from English to Romanian (extensible to other languages)
 - **Text-to-Speech**: Speaks subtitles aloud using Azure Neural TTS with natural inflection
 - **Multi-Application Support**: Works across various streaming apps (Netflix, HBO, Prime Video, etc.)
@@ -83,14 +83,11 @@ dotnet restore
 # Build the project
 dotnet build -c Release -f net9.0-android
 
-# Build with Tesseract4Android support (optional, requires AAR binding)
-dotnet build -c Release -f net9.0-android -p:UseTesseract4Android=true
-
 # Deploy to connected device
 dotnet build -c Release -f net9.0-android -t:Run
 ```
 
-For more information about Tesseract4Android integration, see [TESSERACT4ANDROID_INTEGRATION.md](TESSERACT4ANDROID_INTEGRATION.md).
+**Note**: The application uses Tesseract4Android for OCR. The AAR binding is currently scaffolded but not yet fully integrated. For more information, see [TESSERACT4ANDROID_INTEGRATION.md](TESSERACT4ANDROID_INTEGRATION.md).
 
 ## Configuration
 

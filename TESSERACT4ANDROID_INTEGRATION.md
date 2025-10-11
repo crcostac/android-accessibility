@@ -1,60 +1,38 @@
 # Tesseract4Android Integration Guide
 
-This document describes the scaffolding for integrating Tesseract4Android as an alternative OCR engine for Android.
+This document describes the integration of Tesseract4Android as the OCR engine for Android.
 
 ## Overview
 
-The current implementation uses the Charles Weld Tesseract .NET wrapper, which throws "Unsupported operation system" errors on Android because it lacks native library support for the platform. This integration scaffolds support for Tesseract4Android, a native Android OCR library, while maintaining backward compatibility with the existing implementation.
+The previous implementation used the Charles Weld Tesseract .NET wrapper, which threw "Unsupported operation system" errors on Android because it lacked native library support for the platform. This integration replaces it with Tesseract4AndroidOcrService, a native Android OCR service designed to use Tesseract4Android bindings.
 
 ## Architecture
 
-The integration uses conditional compilation to switch between OCR implementations:
+The application now uses `Tesseract4AndroidOcrService` exclusively for OCR functionality:
 
-- **Default (USE_TESSERACT4ANDROID = false)**: Uses the existing `TesseractOcrService` with the Tesseract NuGet package
-- **Android Native (USE_TESSERACT4ANDROID = true)**: Uses the new `Tesseract4AndroidOcrService` with Tesseract4Android bindings
+- **OCR Service**: `Tesseract4AndroidOcrService` located in `Platforms/Android/Services/`
+- **Package Dependencies**: The Tesseract NuGet package has been removed from the project
+- **Service Registration**: `Tesseract4AndroidOcrService` is registered directly in `MauiProgram.cs`
 
-## Configuration
+## Project Configuration
 
-### Enabling Tesseract4Android
-
-To enable Tesseract4Android support, set the MSBuild property in your build:
-
-```bash
-dotnet build -p:UseTesseract4Android=true
-```
-
-Or edit `Subzy.csproj` and change:
-
-```xml
-<UseTesseract4Android>false</UseTesseract4Android>
-```
-
-to:
-
-```xml
-<UseTesseract4Android>true</UseTesseract4Android>
-```
-
-### Project Configuration
-
-The following changes have been made to support conditional compilation:
+The following changes have been made:
 
 1. **Subzy.csproj**:
-   - Added `UseTesseract4Android` property (default: `false`)
-   - Conditional `DefineConstants` for `USE_TESSERACT4ANDROID` symbol
-   - Conditional package reference for the Tesseract package (excluded when using Tesseract4Android)
+   - Removed the Tesseract NuGet package reference
+   - No conditional compilation properties needed
 
 2. **MauiProgram.cs**:
-   - Conditional service registration based on `USE_TESSERACT4ANDROID` symbol
-   - Registers `Tesseract4AndroidOcrService` when enabled, otherwise `TesseractOcrService`
+   - Direct service registration: `builder.Services.AddSingleton<IOcrService, Subzy.Platforms.Android.Services.Tesseract4AndroidOcrService>();`
+   - No conditional compilation needed
 
 3. **TesseractOcrService.cs**:
-   - Wrapped with `#if !USE_TESSERACT4ANDROID` to exclude when using Android native implementation
+   - Removed from the project as it is no longer needed
 
-4. **Tesseract4AndroidOcrService.cs** (NEW):
+4. **Tesseract4AndroidOcrService.cs**:
    - Located in `Platforms/Android/Services/`
    - Implements `IOcrService` interface
-   - Conditional compilation with `#if ANDROID && USE_TESSERACT4ANDROID`
+   - No conditional compilation needed
 
 ## Implementation Status
 
@@ -108,7 +86,7 @@ To complete the Tesseract4Android integration:
    - Create an Android Bindings Library project
    - Add the Tesseract4Android AAR file
    - Generate C# bindings
-   - Reference the binding library in Subzy.csproj when `UseTesseract4Android` is true
+   - Reference the binding library in Subzy.csproj
 
 2. **Update Tesseract4AndroidOcrService**:
    - Replace TODO comments with actual Tesseract4Android API calls
@@ -120,32 +98,29 @@ To complete the Tesseract4Android integration:
    - Implement asset copying logic in `InitializeAsync`
 
 4. **Testing**:
-   - Test with both `UseTesseract4Android=false` (default) and `UseTesseract4Android=true`
    - Verify OCR functionality on Android devices
-   - Compare performance and accuracy between implementations
+   - Test performance and accuracy
 
 ## Benefits
 
 - **Native Performance**: Tesseract4Android provides optimized native performance on Android
 - **Better Support**: Actively maintained library specifically designed for Android
-- **Backward Compatibility**: Existing implementation remains functional as fallback
-- **No Breaking Changes**: Default behavior unchanged; opt-in via build flag
-- **Future-Proof**: Easy to add the AAR binding when ready without disrupting current builds
+- **Simplified Architecture**: Single OCR implementation without conditional compilation
+- **Future-Proof**: Ready to add the AAR binding when available
 
 ## File Structure
 
 ```
 Subzy/
 ├── Services/
-│   ├── Interfaces/
-│   │   └── IOcrService.cs
-│   └── TesseractOcrService.cs (#if !USE_TESSERACT4ANDROID)
+│   └── Interfaces/
+│       └── IOcrService.cs
 ├── Platforms/
 │   └── Android/
 │       └── Services/
-│           └── Tesseract4AndroidOcrService.cs (#if ANDROID && USE_TESSERACT4ANDROID)
-├── MauiProgram.cs (conditional registration)
-└── Subzy.csproj (UseTesseract4Android property)
+│           └── Tesseract4AndroidOcrService.cs
+├── MauiProgram.cs (direct registration)
+└── Subzy.csproj (no Tesseract NuGet package)
 ```
 
 ## Error Handling
@@ -159,14 +134,8 @@ The implementation gracefully handles missing Tesseract4Android bindings:
 
 ## Troubleshooting
 
-**Q: Build fails when `UseTesseract4Android=true`**  
-A: This is expected if the Tesseract4Android AAR binding hasn't been added yet. The code is scaffolded with TODOs but won't compile fully without the actual binding library.
-
 **Q: OCR returns "[OCR not available - Tesseract4Android binding not yet added]"**  
-A: The binding hasn't been integrated yet. This message indicates the scaffolding is working correctly.
-
-**Q: How do I revert to the old OCR implementation?**  
-A: Simply build with `UseTesseract4Android=false` (the default) or ensure the property is not set.
+A: The Tesseract4Android AAR binding hasn't been integrated yet. This message indicates the service is working correctly but waiting for the actual binding library to be added.
 
 ## References
 

@@ -1,4 +1,3 @@
-#if ANDROID && USE_TESSERACT4ANDROID
 using Subzy.Services.Interfaces;
 
 namespace Subzy.Platforms.Android.Services;
@@ -165,4 +164,3 @@ public class Tesseract4AndroidOcrService : IOcrService
         _logger.Info("Tesseract4AndroidOcrService disposed");
     }
 }
-#endif
