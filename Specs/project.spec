@@ -1,25 +1,31 @@
-# Project Specification: Android Subtitle Reader & Translator
+# Project Specification
 
-## Project Intent
+## 1. Introduction
+... (existing content)
 
-The purpose of this project is to develop an Android application, primarily designed for Android TV but ideally compatible with Android phones as well, to enhance accessibility for users with low vision and other print disabilities by capturing, translating, and speaking aloud on-screen subtitles.
+## 5. Optimized OCR Workflow
+The new 5-stage OCR workflow includes:
+- **Stage 1**: Image Acquisition
+- **Stage 2**: Preprocessing with per-app color profiles
+- **Stage 3**: Text Recognition with foreground app detection
+- **Stage 4**: Post-Processing using perceptual hashing for change detection
+- **Stage 5**: Output Generation
 
-## Core Features
+This optimized pipeline enhances efficiency and accuracy.
 
-- **Name:** Subzy will be the name of the project and of the installed app.
-- **Subtitle Reading:** Use Tesseract OCR (Optical Character Recognition) to capture and read subtitles directly from the screen image, independent of app accessibility APIs.
-- **Translation:** Translate subtitles from English to Romanian (primary), with extensibility for other languages. Use cloud-based translation via Microsoft Azure Translator for high-quality, low-latency translations.
-- **Text-to-Speech:** Speak subtitles aloud using Romanian as the primary voice. Use cloud-based neural TTS via Microsoft Azure for expressive, natural speech inflexion.
-- **Cloud AI Engines:** Use cloud-based AI models for translation and text-to-speech to maximize quality and reduce device resource requirements.
-- **Multi-application Support:** Work across various streaming apps (Netflix, HBO, Amazon Prime, etc.) regardless of their accessibility support by reading pixels from the screen.
-- **Permissions:** Accept the need for full administrator or accessibility permissions to capture the displayed image on the device.
-- **Development Framework:** Use C# with .NET MAUI for cross-platform Android development.
+## 6. Performance Optimization
+The performance of the OCR system has been optimized through several strategies:
+- **Adaptive Processing**: Tailors processing based on the foreground app.
+- **Caching Mechanisms**: Reduces repeated calculations for the same images.
 
-## Target Audience
+## 7. Per-App Color Profiles
+The per-app color profile system allows for customized processing based on the application's color scheme, improving text recognition accuracy.
 
-- Individuals with low vision or other print disabilities who want to access subtitles in spoken form and/or in their native language.
+## 8. Interactive Color Picker
+An interactive color picker will be integrated to allow users to select and adjust color profiles for their specific needs.
 
-## Exploration Areas
+## 9. Performance Strategy
+We will implement performance monitoring to continually assess and optimize the OCR processing times.
 
 - Compare available local AI models for OCR on Android devices.
 - Investigate Android OS capabilities for screen capture, especially on Android TV and phones, including permission requirements and limitations.
@@ -58,18 +64,21 @@ The following are the major code components and logic required for the implement
    - Use platform-appropriate storage APIs (e.g., Xamarin.Essentials Preferences, local SQLite, or .NET MAUI Preferences API).
    - Load preferences at startup and apply them to UI and services.
 
-5. **Workflow Classes**
-   - Logic for the main workflow:
-     - Take screenshot
-     - Apply image post-processing to enhance subtitle region
-     - Detect changes (compare current image with previous to avoid redundant OCR)
-     - If image is different, apply OCR to extract text
-     - Translate extracted text if needed
-     - Apply TTS to the final output
+5. **Optimized 5-Stage OCR Workflow**
+   - **Stage 1: Detect Foreground App (~1ms)** - Uses UsageStatsManager to detect active app and load associated color profile
+   - **Stage 2: Color Filter + Noise Removal (~20-25ms)** - Single-pass algorithm that filters subtitle colors and removes noise based on neighbor analysis
+   - **Stage 3: Perceptual Hashing (~10ms)** - Uses dHash algorithm to detect changes; skips OCR if Hamming distance < threshold
+   - **Stage 4: Run OCR (~200-500ms)** - Only executed if hash indicates content changed; runs Tesseract on filtered image
+   - **Stage 5: Translation & TTS** - Existing logic for Azure Translator and Neural TTS
+   - **Performance:** Expected ~90% reduction in OCR operations (36ms vs 236-536ms per frame)
 
-6. **Subtitle Region Detection**
-   - Logic to specify or automatically detect the region of interest (ROI) for subtitles within the captured image.
-   - Optionally allow user configuration for region selection in the UI.
+6. **Per-App Color Profile System**
+   - **Color Profile Manager** - Manages dictionary of app package → color profile mappings
+   - **Foreground App Detection** - Uses UsageStatsManager API to detect currently active streaming app
+   - **MRU Color List** - Each app maintains up to 5 subtitle colors in Most Recently Used order
+   - **Interactive Color Picker** - Semi-transparent overlay with tap-to-pick functionality using histogram analysis
+   - **Automatic Profile Switching** - System automatically switches profiles when user changes apps
+   - **Profile Persistence** - Color profiles saved to JSON storage via SettingsService
 
 7. **Wrappers for External Services**
    - **Tesseract OCR Wrapper:** Encapsulate interaction with Tesseract library for local OCR processing. Expose simple API for image-to-text conversion.

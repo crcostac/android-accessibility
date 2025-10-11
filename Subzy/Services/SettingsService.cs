@@ -50,7 +50,13 @@ public class SettingsService
                 AdaptiveScheduling = Preferences.Get(nameof(AppSettings.AdaptiveScheduling), true),
                 LowBatteryThreshold = Preferences.Get(nameof(AppSettings.LowBatteryThreshold), 20),
                 
-                HasCompletedOnboarding = Preferences.Get(nameof(AppSettings.HasCompletedOnboarding), false)
+                HasCompletedOnboarding = Preferences.Get(nameof(AppSettings.HasCompletedOnboarding), false),
+                
+                MaxColorsPerApp = Preferences.Get(nameof(AppSettings.MaxColorsPerApp), 5),
+                SubtitleColorTolerance = Preferences.Get(nameof(AppSettings.SubtitleColorTolerance), 30),
+                MinSameColorNeighbors = Preferences.Get(nameof(AppSettings.MinSameColorNeighbors), 2),
+                UsePerceptualHashing = Preferences.Get(nameof(AppSettings.UsePerceptualHashing), true),
+                HashSimilarityThreshold = Preferences.Get(nameof(AppSettings.HashSimilarityThreshold), 8)
             };
 
             _logger.Info("Settings loaded successfully");
@@ -94,6 +100,12 @@ public class SettingsService
             Preferences.Set(nameof(AppSettings.LowBatteryThreshold), settings.LowBatteryThreshold);
             
             Preferences.Set(nameof(AppSettings.HasCompletedOnboarding), settings.HasCompletedOnboarding);
+            
+            Preferences.Set(nameof(AppSettings.MaxColorsPerApp), settings.MaxColorsPerApp);
+            Preferences.Set(nameof(AppSettings.SubtitleColorTolerance), settings.SubtitleColorTolerance);
+            Preferences.Set(nameof(AppSettings.MinSameColorNeighbors), settings.MinSameColorNeighbors);
+            Preferences.Set(nameof(AppSettings.UsePerceptualHashing), settings.UsePerceptualHashing);
+            Preferences.Set(nameof(AppSettings.HashSimilarityThreshold), settings.HashSimilarityThreshold);
 
             _cachedSettings = settings;
             _logger.Info("Settings saved successfully");

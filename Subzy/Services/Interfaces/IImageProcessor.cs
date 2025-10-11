@@ -40,4 +40,19 @@ public interface IImageProcessor
     /// <param name="contrast">Contrast factor</param>
     /// <returns>Enhanced image data</returns>
     Task<byte[]> EnhanceImageAsync(byte[] imageBytes, float brightness = 1.0f, float contrast = 1.0f);
+
+    /// <summary>
+    /// Filters and cleans subtitle pixels using color profile and noise removal.
+    /// Combines color filtering and neighbor-based noise removal in a single pass.
+    /// </summary>
+    /// <param name="imageBytes">Original image data</param>
+    /// <param name="subtitleColors">List of subtitle colors to detect</param>
+    /// <param name="colorTolerance">RGB distance tolerance for color matching (default 30)</param>
+    /// <param name="minNeighbors">Minimum same-color neighbors required to keep pixel (default 2)</param>
+    /// <returns>Filtered image with only subtitle pixels</returns>
+    Task<byte[]> FilterAndCleanSubtitlePixelsAsync(
+        byte[] imageBytes, 
+        List<SkiaSharp.SKColor> subtitleColors,
+        int colorTolerance = 30,
+        int minNeighbors = 2);
 }

@@ -1,16 +1,17 @@
 using Subzy.Services.Interfaces;
-using System.Security.Cryptography;
+using SkiaSharp;
 
 namespace Subzy.Services;
 
 /// <summary>
-/// Service for detecting changes between consecutive frames to avoid redundant processing.
+/// Service for detecting changes between consecutive frames using perceptual hashing.
+/// Uses dHash algorithm for fast and accurate change detection.
 /// </summary>
 public class ChangeDetectorService
 {
     private readonly ILoggingService _logger;
-    private byte[]? _previousImageHash;
-    private const double SimilarityThreshold = 0.95; // 95% similar = no change
+    private ulong? _previousPerceptualHash;
+    private const int HammingDistanceThreshold = 8; // Distance >= 8 means change detected
 
     public ChangeDetectorService(ILoggingService logger)
     {
@@ -19,6 +20,7 @@ public class ChangeDetectorService
 
     /// <summary>
     /// Detects if the current image has changed significantly from the previous one.
+    /// Uses perceptual hashing (dHash) for fast and accurate change detection.
     /// </summary>
     /// <param name="imageBytes">Current image data</param>
     /// <returns>True if image has changed, false if similar to previous</returns>
@@ -26,26 +28,26 @@ public class ChangeDetectorService
     {
         try
         {
-            var currentHash = ComputeHash(imageBytes);
+            var currentHash = ComputePerceptualHash(imageBytes);
             
-            if (_previousImageHash == null)
+            if (_previousPerceptualHash == null)
             {
-                _previousImageHash = currentHash;
+                _previousPerceptualHash = currentHash;
                 _logger.Debug("First frame captured, assuming change");
                 return true;
             }
 
-            var similarity = CalculateSimilarity(_previousImageHash, currentHash);
-            var hasChanged = similarity < SimilarityThreshold;
+            var hammingDistance = HammingDistance(_previousPerceptualHash.Value, currentHash);
+            var hasChanged = hammingDistance >= HammingDistanceThreshold;
 
             if (hasChanged)
             {
-                _previousImageHash = currentHash;
-                _logger.Debug($"Frame changed detected (similarity: {similarity:P})");
+                _previousPerceptualHash = currentHash;
+                _logger.Debug($"Frame changed detected (Hamming distance: {hammingDistance})");
             }
             else
             {
-                _logger.Debug($"No significant change (similarity: {similarity:P})");
+                _logger.Debug($"No significant change (Hamming distance: {hammingDistance})");
             }
 
             return hasChanged;
@@ -62,28 +64,72 @@ public class ChangeDetectorService
     /// </summary>
     public void Reset()
     {
-        _previousImageHash = null;
+        _previousPerceptualHash = null;
         _logger.Debug("Change detector reset");
     }
 
-    private byte[] ComputeHash(byte[] imageBytes)
+    /// <summary>
+    /// Computes perceptual hash using dHash algorithm.
+    /// Resizes image to 9x8, compares horizontal adjacent pixels.
+    /// </summary>
+    private ulong ComputePerceptualHash(byte[] imageBytes)
     {
-        using var sha256 = SHA256.Create();
-        return sha256.ComputeHash(imageBytes);
-    }
+        using var inputStream = new MemoryStream(imageBytes);
+        using var originalBitmap = SKBitmap.Decode(inputStream);
+        
+        if (originalBitmap == null)
+            return 0;
 
-    private double CalculateSimilarity(byte[] hash1, byte[] hash2)
-    {
-        if (hash1.Length != hash2.Length)
-            return 0.0;
+        // Resize to 9x8 pixels using low quality filter (fast)
+        using var resizedBitmap = originalBitmap.Resize(new SKImageInfo(9, 8), SKFilterQuality.Low);
+        
+        if (resizedBitmap == null)
+            return 0;
 
-        int matchingBytes = 0;
-        for (int i = 0; i < hash1.Length; i++)
+        ulong hash = 0;
+        int bitIndex = 0;
+
+        // Compare each pixel with its right neighbor (horizontal gradients)
+        for (int y = 0; y < 8; y++)
         {
-            if (hash1[i] == hash2[i])
-                matchingBytes++;
+            for (int x = 0; x < 8; x++)
+            {
+                var leftPixel = resizedBitmap.GetPixel(x, y);
+                var rightPixel = resizedBitmap.GetPixel(x + 1, y);
+
+                // Calculate brightness: 0.299*R + 0.587*G + 0.114*B
+                var leftBrightness = 0.299 * leftPixel.Red + 0.587 * leftPixel.Green + 0.114 * leftPixel.Blue;
+                var rightBrightness = 0.299 * rightPixel.Red + 0.587 * rightPixel.Green + 0.114 * rightPixel.Blue;
+
+                // Set bit if left pixel is brighter than right
+                if (leftBrightness > rightBrightness)
+                {
+                    hash |= (1UL << bitIndex);
+                }
+
+                bitIndex++;
+            }
         }
 
-        return (double)matchingBytes / hash1.Length;
+        return hash;
+    }
+
+    /// <summary>
+    /// Calculates Hamming distance between two hashes.
+    /// Returns the number of differing bits.
+    /// </summary>
+    private int HammingDistance(ulong hash1, ulong hash2)
+    {
+        var xor = hash1 ^ hash2;
+        int distance = 0;
+
+        // Count the number of 1 bits in the XOR result
+        while (xor != 0)
+        {
+            distance++;
+            xor &= xor - 1; // Clear the least significant bit
+        }
+
+        return distance;
     }
 }
