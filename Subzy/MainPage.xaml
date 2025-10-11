@@ -16,6 +16,7 @@
             <Label Text="Subzy" 
                    FontSize="48" 
                    FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                    HorizontalOptions="Center"
                    SemanticProperties.HeadingLevel="Level1"/>
             <Label Text="Subtitle Reader &amp; Translator" 
@@ -37,12 +38,14 @@
                     <Label Text="{Binding StatusText}"
                            FontSize="24"
                            FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                            HorizontalOptions="Center"
                            HorizontalTextAlignment="Center"
                            SemanticProperties.HeadingLevel="Level2"/>
 
                     <Label Text="{Binding IsServiceRunning, StringFormat='Status: {0}'}"
                            FontSize="16"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                            HorizontalOptions="Center"/>
                 </VerticalStackLayout>
             </Frame>
@@ -54,7 +57,8 @@
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Last Processed Subtitle" 
                            FontSize="18" 
-                           FontAttributes="Bold"/>
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <Label Text="{Binding LastProcessedText}"
                            FontSize="16"
                            LineBreakMode="WordWrap"

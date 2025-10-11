@@ -19,11 +19,13 @@
             <Label Text="{Binding CurrentStepTitle}"
                    FontSize="32"
                    FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"/>
 
             <Label Text="{Binding CurrentStepDescription}"
                    FontSize="18"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"
                    LineBreakMode="WordWrap"/>
@@ -33,11 +35,14 @@
                                   HorizontalOptions="Center"
                                   Margin="0,20,0,0">
                 <Label Text="{Binding CurrentStep, StringFormat='Step {0}'}"
-                       FontSize="16"/>
+                       FontSize="16"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                 <Label Text="of"
-                       FontSize="16"/>
+                       FontSize="16"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                 <Label Text="{Binding TotalSteps}"
-                       FontSize="16"/>
+                       FontSize="16"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
             </HorizontalStackLayout>
 
             <!-- Permission Status (visible only on permissions step) -->
@@ -46,22 +51,31 @@
                    Padding="15"
                    IsVisible="{Binding CurrentStep, Converter={StaticResource IntToBoolConverter}, ConverterParameter=3}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Permission Status" FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Permission Status" 
+                           FontSize="18" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="Screen Capture:" WidthRequest="150"/>
+                        <Label Text="Screen Capture:" 
+                               WidthRequest="150"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                         <Label Text="{Binding PermissionStatus.HasScreenCapturePermission, StringFormat='{0}'}"
                                TextColor="{Binding PermissionStatus.HasScreenCapturePermission, Converter={StaticResource BoolToColorConverter}}"/>
                     </HorizontalStackLayout>
                     
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="Internet:" WidthRequest="150"/>
+                        <Label Text="Internet:" 
+                               WidthRequest="150"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                         <Label Text="{Binding PermissionStatus.HasInternetPermission, StringFormat='{0}'}"
                                TextColor="{Binding PermissionStatus.HasInternetPermission, Converter={StaticResource BoolToColorConverter}}"/>
                     </HorizontalStackLayout>
                     
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="Foreground Service:" WidthRequest="150"/>
+                        <Label Text="Foreground Service:" 
+                               WidthRequest="150"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                         <Label Text="{Binding PermissionStatus.HasForegroundServicePermission, StringFormat='{0}'}"
                                TextColor="{Binding PermissionStatus.HasForegroundServicePermission, Converter={StaticResource BoolToColorConverter}}"/>
                     </HorizontalStackLayout>

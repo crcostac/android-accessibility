@@ -10,15 +10,20 @@
             <Label Text="Settings" 
                    FontSize="32" 
                    FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                    HorizontalOptions="Center" 
                    Margin="0,0,0,20"/>
 
             <!-- Service Configuration -->
             <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Service Configuration" FontSize="20" FontAttributes="Bold"/>
+                    <Label Text="Service Configuration" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     
-                    <Label Text="Snapshot Frequency (seconds)"/>
+                    <Label Text="Snapshot Frequency (seconds)"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <HorizontalStackLayout Spacing="10">
                         <Slider x:Name="FrequencySlider"
                                 Value="{Binding SnapshotFrequency}"
@@ -28,7 +33,8 @@
                                 VerticalOptions="Center"/>
                         <Label Text="{Binding SnapshotFrequency, StringFormat='{0:F0}s'}"
                                VerticalOptions="Center"
-                               FontSize="18"/>
+                               FontSize="18"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Frame>
@@ -36,9 +42,13 @@
             <!-- Image Processing -->
             <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Image Processing" FontSize="20" FontAttributes="Bold"/>
+                    <Label Text="Image Processing" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     
-                    <Label Text="Brightness"/>
+                    <Label Text="Brightness"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <HorizontalStackLayout Spacing="10">
                         <Slider Value="{Binding Brightness}"
                                 Minimum="0.5"
@@ -47,10 +57,12 @@
                                 VerticalOptions="Center"/>
                         <Label Text="{Binding Brightness, StringFormat='{0:F2}'}"
                                VerticalOptions="Center"
-                               FontSize="18"/>
+                               FontSize="18"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     </HorizontalStackLayout>
                     
-                    <Label Text="Contrast"/>
+                    <Label Text="Contrast"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <HorizontalStackLayout Spacing="10">
                         <Slider Value="{Binding Contrast}"
                                 Minimum="0.5"
@@ -59,7 +71,8 @@
                                 VerticalOptions="Center"/>
                         <Label Text="{Binding Contrast, StringFormat='{0:F2}'}"
                                VerticalOptions="Center"
-                               FontSize="18"/>
+                               FontSize="18"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Frame>
@@ -67,14 +80,20 @@
             <!-- Translation Settings -->
             <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Translation" FontSize="20" FontAttributes="Bold"/>
+                    <Label Text="Translation" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="Enable Translation" VerticalOptions="Center"/>
+                        <Label Text="Enable Translation" 
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                         <Switch IsToggled="{Binding IsTranslationEnabled}" />
                     </HorizontalStackLayout>
                     
-                    <Label Text="Target Language"/>
+                    <Label Text="Target Language"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <Entry Text="{Binding TargetLanguage}" 
                            Placeholder="e.g., ro for Romanian"
                            FontSize="16"/>
@@ -84,14 +103,20 @@
             <!-- TTS Settings -->
             <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Text-to-Speech" FontSize="20" FontAttributes="Bold"/>
+                    <Label Text="Text-to-Speech" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="Enable TTS" VerticalOptions="Center"/>
+                        <Label Text="Enable TTS" 
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                         <Switch IsToggled="{Binding IsTtsEnabled}" />
                     </HorizontalStackLayout>
                     
-                    <Label Text="Voice"/>
+                    <Label Text="Voice"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <Picker ItemsSource="{Binding AvailableVoices}"
                             SelectedItem="{Binding TtsVoice}"
                             FontSize="16"/>
@@ -101,18 +126,23 @@
             <!-- Azure Configuration -->
             <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Azure Configuration" FontSize="20" FontAttributes="Bold"/>
+                    <Label Text="Azure Configuration" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <Label Text="Get your API keys from Azure Portal" 
                            FontSize="12" 
                            TextColor="Gray"/>
                     
-                    <Label Text="Translator API Key"/>
+                    <Label Text="Translator API Key"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <Entry Text="{Binding AzureTranslatorKey}" 
                            IsPassword="True"
                            Placeholder="Enter Azure Translator key"
                            FontSize="16"/>
                     
-                    <Label Text="Speech API Key"/>
+                    <Label Text="Speech API Key"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <Entry Text="{Binding AzureSpeechKey}" 
                            IsPassword="True"
                            Placeholder="Enter Azure Speech key"
@@ -128,14 +158,20 @@
             <!-- Resource Management -->
             <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
                 <VerticalStackLayout Spacing="15">
-                    <Label Text="Resource Management" FontSize="20" FontAttributes="Bold"/>
+                    <Label Text="Resource Management" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="Adaptive Scheduling" VerticalOptions="Center"/>
+                        <Label Text="Adaptive Scheduling" 
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                         <Switch IsToggled="{Binding AdaptiveScheduling}" />
                     </HorizontalStackLayout>
                     
-                    <Label Text="Low Battery Threshold (%)"/>
+                    <Label Text="Low Battery Threshold (%)"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <HorizontalStackLayout Spacing="10">
                         <Slider Value="{Binding LowBatteryThreshold}"
                                 Minimum="10"
@@ -144,7 +180,8 @@
                                 VerticalOptions="Center"/>
                         <Label Text="{Binding LowBatteryThreshold, StringFormat='{0:F0}%'}"
                                VerticalOptions="Center"
-                               FontSize="18"/>
+                               FontSize="18"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Frame>
