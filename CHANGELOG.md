@@ -61,6 +61,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented service toggle functionality to start/stop the ScreenCaptureService from the main UI
 - Added ScreenCapturePermissionActivity to handle MediaProjection permission flow
 - Added Android-specific partial implementation of MainViewModel for platform service control
+- Added MediaProjectionCallback to respond to system MediaProjection stop events
+- Added VirtualDisplayCallback for logging VirtualDisplay lifecycle events (pause/resume/stop)
+
+### Fixed
+- Fixed IllegalStateException "Must register a callback before starting capture" on Android 14+ by registering MediaProjection.Callback before creating VirtualDisplay
+- Enhanced lifecycle cleanup in ScreenCaptureService to prevent resource leaks on repeated start/stop cycles
+- Added defensive early-return in StopCapture to prevent errors when called while service is not running
 
 ### Planned Features
 - Automatic subtitle region detection

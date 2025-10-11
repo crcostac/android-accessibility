@@ -29,6 +29,7 @@ public class ScreenCaptureService : Service
     private MediaProjection? _mediaProjection;
     private ImageReader? _imageReader;
     private VirtualDisplay? _virtualDisplay;
+    private MediaProjectionCallback? _projectionCallback;
     private bool _isRunning;
 
     public const string ActionStart = "com.accessibility.subzy.START_CAPTURE";
@@ -120,6 +121,10 @@ public class ScreenCaptureService : Service
                 return;
             }
 
+            // Register callback BEFORE starting capture (required for Android 14+)
+            _projectionCallback = new MediaProjectionCallback(this, _logger);
+            _mediaProjection.RegisterCallback(_projectionCallback, new Handler(Looper.MainLooper));
+
             // Set up screen capture
             SetupScreenCapture();
 
@@ -134,6 +139,7 @@ public class ScreenCaptureService : Service
                 TimeSpan.FromSeconds(frequency)
             );
 
+            // Mark as running only after successful setup
             _isRunning = true;
             _logger?.Info($"Screen capture started with {frequency}s frequency");
         }
@@ -161,22 +167,31 @@ public class ScreenCaptureService : Service
 
             _imageReader = ImageReader.NewInstance(width, height, ImageFormatType.Rgb565, 2);
             
-            _virtualDisplay = _mediaProjection?.CreateVirtualDisplay(
-                "SubzyCapture",
-                width,
-                height,
-                density,
-                DisplayFlags.None,
-                _imageReader?.Surface,
-                null,
-                null
-            );
+            try
+            {
+                _virtualDisplay = _mediaProjection?.CreateVirtualDisplay(
+                    "SubzyCapture",
+                    width,
+                    height,
+                    density,
+                    DisplayFlags.None,
+                    _imageReader?.Surface,
+                    new VirtualDisplayCallback(_logger),
+                    new Handler(Looper.MainLooper)
+                );
+            }
+            catch (Java.Lang.IllegalStateException ex)
+            {
+                _logger?.Error("IllegalStateException during VirtualDisplay creation - callback may not be registered", ex);
+                throw;
+            }
 
             _logger?.Info($"Screen capture setup completed: {width}x{height} @ {density}dpi");
         }
         catch (Exception ex)
         {
             _logger?.Error("Failed to setup screen capture", ex);
+            throw;
         }
     }
 
@@ -303,22 +318,48 @@ public class ScreenCaptureService : Service
 
     private void StopCapture()
     {
+        // Defensive early-return if not running
+        if (!_isRunning)
+        {
+            _logger?.Debug("StopCapture called but service is not running");
+            return;
+        }
+
         try
         {
             _isRunning = false;
             
+            // Dispose and null out timer
             _captureTimer?.Dispose();
             _captureTimer = null;
 
+            // Release virtual display
             _virtualDisplay?.Release();
             _virtualDisplay = null;
 
+            // Close image reader
             _imageReader?.Close();
             _imageReader = null;
 
+            // Unregister callback before stopping projection
+            if (_mediaProjection != null && _projectionCallback != null)
+            {
+                try
+                {
+                    _mediaProjection.UnregisterCallback(_projectionCallback);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.Warning("Failed to unregister MediaProjection callback", ex);
+                }
+                _projectionCallback = null;
+            }
+
+            // Stop and dispose projection
             _mediaProjection?.Stop();
             _mediaProjection = null;
 
+            // Stop foreground service
             StopForeground(true);
             StopSelf();
 
@@ -387,5 +428,54 @@ public class ScreenCaptureService : Service
     {
         StopCapture();
         base.OnDestroy();
+    }
+
+    /// <summary>
+    /// Callback for MediaProjection lifecycle events.
+    /// </summary>
+    private class MediaProjectionCallback : MediaProjection.Callback
+    {
+        private readonly ScreenCaptureService _service;
+        private readonly ILoggingService? _logger;
+
+        public MediaProjectionCallback(ScreenCaptureService service, ILoggingService? logger)
+        {
+            _service = service;
+            _logger = logger;
+        }
+
+        public override void OnStop()
+        {
+            _logger?.Info("MediaProjection stopped by system");
+            _service.StopCapture();
+        }
+    }
+
+    /// <summary>
+    /// Callback for VirtualDisplay lifecycle events (for debugging and telemetry).
+    /// </summary>
+    private class VirtualDisplayCallback : VirtualDisplay.Callback
+    {
+        private readonly ILoggingService? _logger;
+
+        public VirtualDisplayCallback(ILoggingService? logger)
+        {
+            _logger = logger;
+        }
+
+        public override void OnPaused()
+        {
+            _logger?.Info("VirtualDisplay paused");
+        }
+
+        public override void OnResumed()
+        {
+            _logger?.Info("VirtualDisplay resumed");
+        }
+
+        public override void OnStopped()
+        {
+            _logger?.Info("VirtualDisplay stopped");
+        }
     }
 }
