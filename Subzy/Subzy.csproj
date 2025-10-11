@@ -49,6 +49,7 @@
 		<PackageReference Include="Azure.AI.Translation.Text" Version="1.0.0" />
 		<PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.41.1" />
 		<PackageReference Include="Tesseract" Version="5.2.0" />
+		<PackageReference Include="SkiaSharp" Version="2.88.8" />
 	</ItemGroup>
 
 </Project>

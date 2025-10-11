@@ -17,6 +17,8 @@ public class WorkflowOrchestrator
     private readonly IOcrService _ocrService;
     private readonly ITranslationService _translationService;
     private readonly ITtsService _ttsService;
+    private readonly ForegroundAppDetector _appDetector;
+    private readonly ColorProfileManager _colorProfileManager;
 
     public WorkflowOrchestrator(
         ILoggingService logger,
@@ -25,7 +27,9 @@ public class WorkflowOrchestrator
         ChangeDetectorService changeDetector,
         IOcrService ocrService,
         ITranslationService translationService,
-        ITtsService ttsService)
+        ITtsService ttsService,
+        ForegroundAppDetector appDetector,
+        ColorProfileManager colorProfileManager)
     {
         _logger = logger;
         _settingsService = settingsService;
@@ -34,10 +38,17 @@ public class WorkflowOrchestrator
         _ocrService = ocrService;
         _translationService = translationService;
         _ttsService = ttsService;
+        _appDetector = appDetector;
+        _colorProfileManager = colorProfileManager;
     }
 
     /// <summary>
-    /// Processes a captured screenshot through the complete pipeline.
+    /// Processes a captured screenshot through the complete 5-stage pipeline:
+    /// Stage 1: Detect Foreground App
+    /// Stage 2: Color Filter + Noise Removal
+    /// Stage 3: Perceptual Hashing
+    /// Stage 4: Run OCR (if changed)
+    /// Stage 5: Translation & TTS
     /// </summary>
     /// <param name="screenshotBytes">Raw screenshot data</param>
     /// <returns>Processing result with timing information</returns>
@@ -49,28 +60,51 @@ public class WorkflowOrchestrator
         try
         {
             var settings = _settingsService.LoadSettings();
-            
-            // Step 1: Pre-process image (crop ROI, enhance)
             var stopwatch = Stopwatch.StartNew();
-            var processedImage = await PreProcessImageAsync(screenshotBytes, settings);
-            result.ProcessingTime = stopwatch.Elapsed;
-            _logger.Debug($"Image processing completed in {stopwatch.ElapsedMilliseconds}ms");
 
-            // Step 2: Detect changes
+            // Stage 1: Detect Foreground App (~1ms)
             stopwatch.Restart();
-            var hasChanged = _changeDetector.HasChanged(processedImage);
+            var appPackageName = _appDetector.GetForegroundAppPackageName();
+            var appDisplayName = appPackageName != null 
+                ? _appDetector.GetAppDisplayName(appPackageName) 
+                : "Unknown";
+            
+            var colorProfile = _colorProfileManager.GetActiveProfile(
+                appPackageName ?? "default", 
+                appDisplayName);
+            
+            _logger.Debug($"Foreground app: {appDisplayName} ({stopwatch.ElapsedMilliseconds}ms)");
+
+            // Stage 2: Color Filter + Noise Removal (~20-25ms)
+            stopwatch.Restart();
+            var filteredImage = await _imageProcessor.FilterAndCleanSubtitlePixelsAsync(
+                screenshotBytes,
+                colorProfile.SubtitleColors,
+                settings.SubtitleColorTolerance,
+                settings.MinSameColorNeighbors
+            );
+            result.ProcessingTime = stopwatch.Elapsed;
+            _logger.Debug($"Color filtering completed in {stopwatch.ElapsedMilliseconds}ms");
+
+            // Stage 3: Perceptual Hashing (~10ms)
+            stopwatch.Restart();
+            var hasChanged = settings.UsePerceptualHashing 
+                ? _changeDetector.HasChanged(filteredImage)
+                : true; // Always run OCR if perceptual hashing disabled
+            
             result.ContentChanged = hasChanged;
 
             if (!hasChanged)
             {
                 _logger.Debug("No content change detected, skipping OCR");
                 result.ProcessingDuration = overallStopwatch.Elapsed;
+                _logger.Info($"Total pipeline time (no OCR): {result.ProcessingDuration.TotalMilliseconds}ms");
                 return result;
             }
 
-            // Step 3: Extract text via OCR
+            // Stage 4: Run OCR (~200-500ms)
             stopwatch.Restart();
-            var extractedText = await _ocrService.ExtractTextAsync(processedImage);
+            var extractedText = await _ocrService.ExtractTextAsync(filteredImage);
             result.OcrTime = stopwatch.Elapsed;
             _logger.Debug($"OCR completed in {stopwatch.ElapsedMilliseconds}ms");
 
@@ -78,6 +112,7 @@ public class WorkflowOrchestrator
             {
                 _logger.Debug("No text extracted from image");
                 result.ProcessingDuration = overallStopwatch.Elapsed;
+                _logger.Info($"Total pipeline time (no text): {result.ProcessingDuration.TotalMilliseconds}ms");
                 return result;
             }
 
@@ -88,7 +123,8 @@ public class WorkflowOrchestrator
                 Timestamp = DateTime.Now
             };
 
-            // Step 4: Translate if enabled
+            // Stage 5: Translation & TTS
+            // Translate if enabled
             if (settings.IsTranslationEnabled && _translationService.IsConfigured)
             {
                 stopwatch.Restart();
@@ -110,7 +146,7 @@ public class WorkflowOrchestrator
                 subtitleData.DetectedLanguage = "none";
             }
 
-            // Step 5: Speak text if TTS enabled
+            // Speak text if TTS enabled
             if (settings.IsTtsEnabled && _ttsService.IsConfigured)
             {
                 stopwatch.Restart();

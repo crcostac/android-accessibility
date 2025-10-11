@@ -39,4 +39,15 @@ public class AppSettings
 
     // Onboarding
     public bool HasCompletedOnboarding { get; set; }
+
+    // Color Detection
+    public int MaxColorsPerApp { get; set; } = 5;
+    public int SubtitleColorTolerance { get; set; } = 30;
+
+    // Noise Removal
+    public int MinSameColorNeighbors { get; set; } = 2;
+
+    // Perceptual Hashing
+    public bool UsePerceptualHashing { get; set; } = true;
+    public int HashSimilarityThreshold { get; set; } = 8;
 }
