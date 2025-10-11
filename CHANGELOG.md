@@ -57,6 +57,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Implemented service toggle functionality to start/stop the ScreenCaptureService from the main UI
+- Added ScreenCapturePermissionActivity to handle MediaProjection permission flow
+- Added Android-specific partial implementation of MainViewModel for platform service control
+
 ### Planned Features
 - Automatic subtitle region detection
 - Support for additional languages
