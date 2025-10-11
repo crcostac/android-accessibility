@@ -43,9 +43,9 @@ public class SettingsService
                 RoiHeight = Preferences.Get(nameof(AppSettings.RoiHeight), 0),
                 
                 AzureTranslatorKey = Preferences.Get(nameof(AppSettings.AzureTranslatorKey), ""),
-                AzureTranslatorRegion = Preferences.Get(nameof(AppSettings.AzureTranslatorRegion), "westeurope"),
+                AzureTranslatorRegion = Preferences.Get(nameof(AppSettings.AzureTranslatorRegion), "global"),
                 AzureSpeechKey = Preferences.Get(nameof(AppSettings.AzureSpeechKey), ""),
-                AzureSpeechRegion = Preferences.Get(nameof(AppSettings.AzureSpeechRegion), "westeurope"),
+                AzureSpeechRegion = Preferences.Get(nameof(AppSettings.AzureSpeechRegion), "italynorth"),
                 
                 AdaptiveScheduling = Preferences.Get(nameof(AppSettings.AdaptiveScheduling), true),
                 LowBatteryThreshold = Preferences.Get(nameof(AppSettings.LowBatteryThreshold), 20),

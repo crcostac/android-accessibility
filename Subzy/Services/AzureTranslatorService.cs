@@ -12,8 +12,6 @@ public class AzureTranslatorService : ITranslationService
     private readonly ILoggingService _logger;
     private readonly SettingsService _settingsService;
     private TextTranslationClient? _client;
-    private readonly Dictionary<string, (string translatedText, DateTime timestamp)> _cache = new();
-    private const int CacheExpirationMinutes = 10;
 
     public bool IsConfigured { get; private set; }
 
@@ -65,17 +63,6 @@ public class AzureTranslatorService : ITranslationService
             return (text, "unknown");
         }
 
-        // Check cache
-        var cacheKey = $"{text}_{targetLanguage}";
-        if (_cache.TryGetValue(cacheKey, out var cached))
-        {
-            if (DateTime.Now - cached.timestamp < TimeSpan.FromMinutes(CacheExpirationMinutes))
-            {
-                _logger.Debug("Translation retrieved from cache");
-                return (cached.translatedText, sourceLanguage ?? "cached");
-            }
-        }
-
         try
         {
             var response = await _client!.TranslateAsync(
@@ -90,9 +77,6 @@ public class AzureTranslatorService : ITranslationService
                 var translatedText = translation.Translations.FirstOrDefault()?.Text ?? text;
                 var detectedLang = translation.DetectedLanguage?.Language ?? sourceLanguage ?? "unknown";
 
-                // Update cache
-                _cache[cacheKey] = (translatedText, DateTime.Now);
-                
                 _logger.Info($"Translated text from {detectedLang} to {targetLanguage}");
                 return (translatedText, detectedLang);
             }
@@ -105,12 +89,6 @@ public class AzureTranslatorService : ITranslationService
             _logger.Error("Translation failed", ex);
             return (text, sourceLanguage ?? "error");
         }
-    }
-
-    public void ClearCache()
-    {
-        _cache.Clear();
-        _logger.Debug("Translation cache cleared");
     }
 
     /// <summary>

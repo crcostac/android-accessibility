@@ -29,9 +29,9 @@ public class AppSettings
 
     // Azure API Configuration
     public string AzureTranslatorKey { get; set; } = "";
-    public string AzureTranslatorRegion { get; set; } = "westeurope";
+    public string AzureTranslatorRegion { get; set; } = "global";
     public string AzureSpeechKey { get; set; } = "";
-    public string AzureSpeechRegion { get; set; } = "westeurope";
+    public string AzureSpeechRegion { get; set; } = "italynorth";
 
     // Resource Management
     public bool AdaptiveScheduling { get; set; } = true;

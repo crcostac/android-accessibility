@@ -90,45 +90,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            // Store original API keys to detect changes
-            var originalTranslatorKey = _settings.AzureTranslatorKey;
-            var originalSpeechKey = _settings.AzureSpeechKey;
-
-            _settings.SnapshotFrequencySeconds = SnapshotFrequency;
-            _settings.Brightness = Brightness;
-            _settings.Contrast = Contrast;
-            _settings.IsTranslationEnabled = IsTranslationEnabled;
-            _settings.TargetLanguage = TargetLanguage;
-            _settings.IsTtsEnabled = IsTtsEnabled;
-            _settings.TtsVoice = TtsVoice;
-            _settings.AzureTranslatorKey = AzureTranslatorKey;
-            _settings.AzureSpeechKey = AzureSpeechKey;
-            _settings.AdaptiveScheduling = AdaptiveScheduling;
-            _settings.LowBatteryThreshold = LowBatteryThreshold;
-
-            _settingsService.SaveSettings(_settings);
-            _logger.Info("Settings saved successfully");
-
-            // Reinitialize services if API keys have changed
-            if (originalTranslatorKey != AzureTranslatorKey)
-            {
-                _logger.Info("Azure Translator key changed, reinitializing translation service");
-                if (_translationService is AzureTranslatorService translatorService)
-                {
-                    translatorService.Reinitialize();
-                    _logger.Info("Translation service reinitialized with new API key");
-                }
-            }
-
-            if (originalSpeechKey != AzureSpeechKey)
-            {
-                _logger.Info("Azure Speech key changed, reinitializing TTS service");
-                if (_ttsService is AzureTtsService ttsService)
-                {
-                    ttsService.Reinitialize();
-                    _logger.Info("TTS service reinitialized with new API key");
-                }
-            }
+            InternalSaveSettings();
 
             MainThread.BeginInvokeOnMainThread(async () =>
             {
@@ -150,6 +112,49 @@ public partial class SettingsViewModel : ObservableObject
                     "OK"
                 );
             });
+        }
+    }
+
+    private void InternalSaveSettings()
+    {
+        // Store original API keys to detect changes
+        var originalTranslatorKey = _settings.AzureTranslatorKey;
+        var originalSpeechKey = _settings.AzureSpeechKey;
+
+        _settings.SnapshotFrequencySeconds = SnapshotFrequency;
+        _settings.Brightness = Brightness;
+        _settings.Contrast = Contrast;
+        _settings.IsTranslationEnabled = IsTranslationEnabled;
+        _settings.TargetLanguage = TargetLanguage;
+        _settings.IsTtsEnabled = IsTtsEnabled;
+        _settings.TtsVoice = TtsVoice;
+        _settings.AzureTranslatorKey = AzureTranslatorKey;
+        _settings.AzureSpeechKey = AzureSpeechKey;
+        _settings.AdaptiveScheduling = AdaptiveScheduling;
+        _settings.LowBatteryThreshold = LowBatteryThreshold;
+
+        _settingsService.SaveSettings(_settings);
+        _logger.Info("Settings saved successfully");
+
+        // Reinitialize services if API keys have changed
+        //if (originalTranslatorKey != AzureTranslatorKey)
+        {
+            _logger.Info("Azure Translator key changed, reinitializing translation service");
+            if (_translationService is AzureTranslatorService translatorService)
+            {
+                translatorService.Reinitialize();
+                _logger.Info("Translation service reinitialized with new API key");
+            }
+        }
+
+        //if (originalSpeechKey != AzureSpeechKey)
+        {
+            _logger.Info("Azure Speech key changed, reinitializing TTS service");
+            if (_ttsService is AzureTtsService ttsService)
+            {
+                ttsService.Reinitialize();
+                _logger.Info("TTS service reinitialized with new API key");
+            }
         }
     }
 
@@ -191,7 +196,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             // Save current settings before testing
-            SaveSettings();
+            InternalSaveSettings();
             
             // Check if translation service is configured
             if (!_translationService.IsConfigured)
@@ -205,15 +210,8 @@ public partial class SettingsViewModel : ObservableObject
             }
 
             // Use sample text
-            var testText = "Hello, this is a translation test.";
+            var testText = "This is a test of subtitle translation.";
             var settings = _settingsService.LoadSettings();
-            
-            // Show testing message
-            await Application.Current!.MainPage!.DisplayAlert(
-                "Testing Translation",
-                $"Translating: \"{testText}\"\nTarget Language: {settings.TargetLanguage}",
-                "OK"
-            );
 
             // Perform translation
             var (translated, detected) = await _translationService.TranslateAsync(
@@ -225,7 +223,7 @@ public partial class SettingsViewModel : ObservableObject
             // Show result
             await Application.Current!.MainPage!.DisplayAlert(
                 "Translation Test Result",
-                $"Original: {testText}\n\nDetected Language: {detected}\n\nTranslated: {translated}",
+                $"Original: {testText}\n\nTranslated: {translated}",
                 "OK"
             );
         }
@@ -246,7 +244,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             // Save current settings before testing
-            SaveSettings();
+            InternalSaveSettings();
             
             // Check if TTS service is configured
             if (!_ttsService.IsConfigured)
@@ -260,7 +258,7 @@ public partial class SettingsViewModel : ObservableObject
             }
 
             // Use sample text
-            var testText = "This is a text-to-speech test.";
+            var testText = "Acesta este un test de traducere a subtitrărilor.";
             var settings = _settingsService.LoadSettings();
             
             // Show what will be spoken
@@ -272,13 +270,6 @@ public partial class SettingsViewModel : ObservableObject
 
             // Actually speak the text
             await _ttsService.SpeakAsync(testText, settings.TtsVoice);
-            
-            // Show success message
-            await Application.Current!.MainPage!.DisplayAlert(
-                "TTS Test Complete",
-                "Text-to-speech test completed successfully.",
-                "OK"
-            );
         }
         catch (Exception ex)
         {
