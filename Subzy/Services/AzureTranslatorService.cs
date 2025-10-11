@@ -112,4 +112,14 @@ public class AzureTranslatorService : ITranslationService
         _cache.Clear();
         _logger.Debug("Translation cache cleared");
     }
+
+    /// <summary>
+    /// Reinitializes the translation client with updated settings.
+    /// Use this after changing API keys to apply the new credentials.
+    /// </summary>
+    public void Reinitialize()
+    {
+        _logger.Info("Reinitializing Azure Translator service");
+        InitializeClient();
+    }
 }

@@ -90,6 +90,10 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
+            // Store original API keys to detect changes
+            var originalTranslatorKey = _settings.AzureTranslatorKey;
+            var originalSpeechKey = _settings.AzureSpeechKey;
+
             _settings.SnapshotFrequencySeconds = SnapshotFrequency;
             _settings.Brightness = Brightness;
             _settings.Contrast = Contrast;
@@ -104,6 +108,27 @@ public partial class SettingsViewModel : ObservableObject
 
             _settingsService.SaveSettings(_settings);
             _logger.Info("Settings saved successfully");
+
+            // Reinitialize services if API keys have changed
+            if (originalTranslatorKey != AzureTranslatorKey)
+            {
+                _logger.Info("Azure Translator key changed, reinitializing translation service");
+                if (_translationService is AzureTranslatorService translatorService)
+                {
+                    translatorService.Reinitialize();
+                    _logger.Info("Translation service reinitialized with new API key");
+                }
+            }
+
+            if (originalSpeechKey != AzureSpeechKey)
+            {
+                _logger.Info("Azure Speech key changed, reinitializing TTS service");
+                if (_ttsService is AzureTtsService ttsService)
+                {
+                    ttsService.Reinitialize();
+                    _logger.Info("TTS service reinitialized with new API key");
+                }
+            }
 
             MainThread.BeginInvokeOnMainThread(async () =>
             {
