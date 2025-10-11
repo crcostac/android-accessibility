@@ -23,6 +23,14 @@
 		<RuntimeIdentifiers>android-arm64;android-x64;android-x86;android-arm</RuntimeIdentifiers>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+
+		<!-- Tesseract4Android Integration Flag -->
+		<UseTesseract4Android>false</UseTesseract4Android>
+	</PropertyGroup>
+
+	<!-- Conditional compilation for Tesseract4Android -->
+	<PropertyGroup Condition="'$(UseTesseract4Android)' == 'true'">
+		<DefineConstants>$(DefineConstants);USE_TESSERACT4ANDROID</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -50,8 +58,12 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Azure.AI.Translation.Text" Version="1.0.0" />
 		<PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.41.1" />
-		<PackageReference Include="Tesseract" Version="5.2.0" />
 		<PackageReference Include="SkiaSharp" Version="2.88.8" />
+	</ItemGroup>
+
+	<!-- Conditional Tesseract package references -->
+	<ItemGroup Condition="'$(UseTesseract4Android)' != 'true'">
+		<PackageReference Include="Tesseract" Version="5.2.0" />
 	</ItemGroup>
 
 </Project>

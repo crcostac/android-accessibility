@@ -1,3 +1,4 @@
+#if !USE_TESSERACT4ANDROID
 using Subzy.Services.Interfaces;
 using Tesseract;
 
@@ -99,3 +100,4 @@ public class TesseractOcrService : IOcrService
         _isInitialized = false;
     }
 }
+#endif
