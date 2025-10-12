@@ -140,21 +140,14 @@ public class MlKitOcrService : IOcrService
             {
                 foreach (var block in blocks)
                 {
-                    var recognizedLanguages = block?.RecognizedLanguages;
-                    if (recognizedLanguages != null && recognizedLanguages.Count > 0)
+                    var langCode = block?.RecognizedLanguage;
+                    if (!string.IsNullOrEmpty(langCode))
                     {
-                        foreach (var recognizedLang in recognizedLanguages)
+                        if (!languageCounts.ContainsKey(langCode))
                         {
-                            var langCode = recognizedLang?.LanguageCode;
-                            if (!string.IsNullOrEmpty(langCode))
-                            {
-                                if (!languageCounts.ContainsKey(langCode))
-                                {
-                                    languageCounts[langCode] = 0;
-                                }
-                                languageCounts[langCode]++;
-                            }
+                            languageCounts[langCode] = 0;
                         }
+                        languageCounts[langCode]++;
                     }
                 }
             }
