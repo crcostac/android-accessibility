@@ -27,6 +27,8 @@ The ML Kit Text Recognition v2 migration has been successfully implemented with 
 
 **Current Status**: Build requires network access to `dl.google.com` for downloading ML Kit AAR dependencies.
 
+**AndroidX Package Alignment**: ✅ Fixed - All AndroidX package version mismatches have been resolved. See [ANDROIDX_FIX.md](../ANDROIDX_FIX.md) for details.
+
 **Error Details**:
 ```
 Download failed. Please download https://dl.google.com/dl/android/maven2/com/google/android/gms/play-services-mlkit-text-recognition/19.0.1/play-services-mlkit-text-recognition-19.0.1.aar
@@ -50,18 +52,24 @@ Download failure reason: Name or service not known (dl.google.com:443)
 
 To build the project successfully:
 
-1. **On a machine with internet access to dl.google.com**:
+1. **Clean build directories** (recommended after package version changes):
    ```bash
    cd /path/to/android-accessibility/Subzy
+   dotnet clean
+   rm -rf obj bin
+   ```
+
+2. **On a machine with internet access to dl.google.com**:
+   ```bash
    dotnet restore
    dotnet build -c Release -f net9.0-android
    ```
 
-2. **The AAR files will be automatically downloaded** to:
+3. **The AAR files will be automatically downloaded** to:
    - Linux/macOS: `~/Library/Caches/XamarinBuildDownload/`
    - Windows: `%LOCALAPPDATA%\Xamarin\XamarinBuildDownload\`
 
-3. **First build may take 3-5 minutes** as it downloads ~15 MB of AAR dependencies
+4. **First build may take 3-5 minutes** as it downloads ~15 MB of AAR dependencies
 
 ### Code Quality
 
