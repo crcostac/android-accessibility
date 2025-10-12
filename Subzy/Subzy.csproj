@@ -54,4 +54,10 @@
 		<PackageReference Include="Xamarin.GooglePlayServices.MLKit.Text.Recognition" Version="119.0.1.5" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
+		<!-- Android-specific ML Kit OCR implementation -->
+		<Compile Include="Platforms\Android\Services\MlKitOcrService.cs" />
+		<Compile Include="Platforms\Android\Helpers\TaskExtensions.cs" />
+	</ItemGroup>
+
 </Project>

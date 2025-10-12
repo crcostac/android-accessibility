@@ -70,9 +70,6 @@ Desktop.ini
 # Log files
 *.log
 
-# Deprecated files
-*.deprecated
-
 # App data
 AppData/
 logs/
