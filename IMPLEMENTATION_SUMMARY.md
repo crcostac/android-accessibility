@@ -42,7 +42,6 @@ Subzy/
 │   │   ├── ITtsService.cs
 │   │   ├── IImageProcessor.cs
 │   │   └── ILoggingService.cs
-│   ├── TesseractOcrService.cs
 │   ├── AzureTranslatorService.cs
 │   ├── AzureTtsService.cs
 │   ├── ImageProcessorService.cs  # UPDATED: Smart filtering
@@ -71,7 +70,10 @@ Subzy/
 │   ├── AndroidManifest.xml       # UPDATED: Usage stats permission
 │   ├── Services/
 │   │   ├── ScreenCaptureService.cs  # UPDATED: Color picker action
-│   │   └── ForegroundAppDetector.cs # NEW: App detection impl
+│   │   ├── ForegroundAppDetector.cs # NEW: App detection impl
+│   │   └── MlKitOcrService.cs    # NEW: ML Kit OCR implementation
+│   ├── Helpers/
+│   │   └── TaskExtensions.cs     # NEW: Play Services Task conversion
 │   ├── ColorPickerActivity.cs    # NEW: Overlay UI
 │   └── MainActivity.cs
 └── Resources/              # Assets and localization
@@ -93,7 +95,7 @@ Subzy/
 #### Services
 - **LoggingService**: File-based logging with automatic rotation
 - **SettingsService**: Persistent settings using MAUI Preferences (includes color profile storage)
-- **TesseractOcrService**: OCR text extraction with error handling
+- **MlKitOcrService**: Fast, on-device OCR using Google ML Kit Text Recognition v2 with automatic language detection
 - **AzureTranslatorService**: Translation with caching mechanism
 - **AzureTtsService**: Text-to-speech with SSML support
 - **ImageProcessorService**: Smart filtering with single-pass color detection and noise removal using SkiaSharp
@@ -169,7 +171,7 @@ Subzy/
 - **.NET 9.0**: Latest .NET framework
 - **.NET MAUI**: Cross-platform UI framework
 - **C# 12**: Modern language features
-- **Tesseract 5.2.0**: OCR engine
+- **Google ML Kit Text Recognition v2 (119.0.1.5)**: Fast, on-device OCR engine
 - **Azure Translator 1.0.0**: Cloud translation
 - **Azure Speech 1.41.1**: Neural TTS
 - **SkiaSharp 2.88.8**: Image manipulation and filtering
@@ -201,8 +203,11 @@ The system implements an intelligent 5-stage processing pipeline that minimizes 
 - Calculates Hamming distance between consecutive frames
 - Skips OCR if distance < 8 (no significant change)
 
-**Stage 4: Run OCR (~200-500ms)**
+**Stage 4: Run OCR (~200-500ms with ML Kit)**
 - Only executed when hash indicates content changed
+- Uses Google ML Kit Text Recognition v2 for fast on-device processing
+- Automatically detects and preserves diacritics (Romanian, Spanish, etc.)
+- Provides lightweight language inference from recognized blocks
 - Processes filtered image (better accuracy, faster)
 - Expected to run in only ~10% of frames
 
@@ -323,23 +328,24 @@ All 15 requirements from `Specs/project.spec` have been fully implemented:
 ✅ Settings persistence working
 
 #### Before First Release
-⚠️ Add Tesseract trained data files
 ⚠️ Configure Azure API keys
-⚠️ Test on physical devices
+⚠️ Test on physical devices with Google Play Services
 ⚠️ Customize app icon
 ⚠️ Generate signed APK
 ⚠️ Create privacy policy page
 ⚠️ Test with streaming apps
 ⚠️ Performance optimization
+⚠️ Verify ML Kit functionality across different Android versions
 
 ### 12. Known Limitations
 
 As documented in README:
-- Tesseract data files must be added separately
+- Requires Google Play Services for ML Kit functionality
 - Azure API keys required (not included)
 - DRM content may prevent capture on some devices
 - Requires internet for translation/TTS
 - OCR accuracy depends on subtitle quality
+- ML Kit Text Recognition supports Latin script languages
 - Usage stats permission requires manual granting via system settings
 
 ### 13. Future Enhancements
