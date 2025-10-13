@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Subzy.Models;
 using Subzy.Services;
 using Subzy.Services.Interfaces;
@@ -30,6 +32,11 @@ public partial class DebugViewModel : ObservableObject
 
     [ObservableProperty]
     private ProcessingResult? _lastResult;
+
+    [ObservableProperty]
+    private ImageSource? _testImage;
+
+    private byte[]? _testImageBytes;
 
     public DebugViewModel(
         ILoggingService logger,
@@ -67,6 +74,56 @@ public partial class DebugViewModel : ObservableObject
         DebugOutput = sb.ToString();
     }
 
+    private void GenerateTestImage()
+    {
+        try
+        {
+            const int width = 800;
+            const int height = 200;
+            
+            // Create a bitmap export context
+            var bitmapExportContext = new PlatformBitmapExportContext(width, height, 1.0f);
+            var canvas = bitmapExportContext.Canvas;
+
+            // Fill with black background
+            canvas.FillColor = Colors.Black;
+            canvas.FillRectangle(0, 0, width, height);
+
+            // Draw white text
+            canvas.FontColor = Colors.White;
+            canvas.FontSize = 36;
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+
+            // Draw text centered in the canvas
+            canvas.DrawString(
+                TestText,
+                0,
+                0,
+                width,
+                height,
+                HorizontalAlignment.Center,
+                VerticalAlignment.Center);
+
+            // Export to PNG bytes
+            using var memoryStream = new MemoryStream();
+            var image = bitmapExportContext.Image;
+            image.Save(memoryStream);
+            _testImageBytes = memoryStream.ToArray();
+
+            // Set the ImageSource for display
+            TestImage = ImageSource.FromStream(() => new MemoryStream(_testImageBytes));
+
+            _logger.Debug($"Generated test image: {width}x{height}, {_testImageBytes.Length} bytes");
+        }
+        catch (Exception ex)
+        {
+            _logger.Error("Failed to generate test image", ex);
+            AppendOutput($"Image generation error: {ex.Message}");
+            _testImageBytes = null;
+            TestImage = null;
+        }
+    }
+
     [RelayCommand]
     private async Task TestOcrAsync()
     {
@@ -76,15 +133,67 @@ public partial class DebugViewModel : ObservableObject
         {
             IsTesting = true;
             AppendOutput("\n=== Testing OCR ===");
-            AppendOutput("OCR test requires actual image data");
+            AppendOutput($"Input Text: \"{TestText}\"");
             AppendOutput($"OCR Status: {(_ocrService.IsInitialized ? "Ready" : "Not Initialized")}");
 
+            // Initialize OCR if needed
             if (!_ocrService.IsInitialized)
             {
                 AppendOutput("Initializing OCR...");
                 await _ocrService.InitializeAsync();
                 AppendOutput($"OCR Status after init: {(_ocrService.IsInitialized ? "Ready" : "Failed")}");
+                
+                if (!_ocrService.IsInitialized)
+                {
+                    AppendOutput("OCR initialization failed. Cannot proceed with test.");
+                    return;
+                }
             }
+
+            // Generate test image with current TestText
+            AppendOutput("Generating test image...");
+            GenerateTestImage();
+
+            if (_testImageBytes == null || _testImageBytes.Length == 0)
+            {
+                AppendOutput("Failed to generate test image. Cannot proceed with OCR test.");
+                return;
+            }
+
+            AppendOutput($"Image generated: {_testImageBytes.Length} bytes");
+
+            // Perform OCR on the generated image
+            AppendOutput("Performing OCR on generated image...");
+            var extractedText = await _ocrService.ExtractTextAsync(_testImageBytes);
+
+            // Display results
+            AppendOutput($"Extracted Text: \"{extractedText}\"");
+            AppendOutput($"Extracted Length: {extractedText.Length} characters");
+
+            // Try to get detected language if available (ML Kit specific)
+            try
+            {
+                var mlKitService = _ocrService as dynamic;
+                if (mlKitService?.LastDetectedLanguage != null)
+                {
+                    AppendOutput($"Detected Language: {mlKitService.LastDetectedLanguage}");
+                }
+            }
+            catch
+            {
+                // LastDetectedLanguage not available or not accessible
+            }
+
+            // Compare with original
+            var match = string.Equals(TestText.Trim(), extractedText.Trim(), StringComparison.OrdinalIgnoreCase);
+            AppendOutput($"Match with input: {(match ? "Yes" : "No")}");
+            
+            if (!match)
+            {
+                AppendOutput("Note: OCR may not be 100% accurate depending on font and text complexity.");
+            }
+
+            AppendOutput("OCR test completed successfully");
         }
         catch (Exception ex)
         {
