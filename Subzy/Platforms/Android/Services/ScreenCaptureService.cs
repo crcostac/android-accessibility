@@ -2,16 +2,19 @@ using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Hardware.Display;
+using Android.Hardware.Lights;
 using Android.Media;
 using Android.Media.Projection;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Core.App;
+using Java.Nio;
 using Subzy.Helpers;
 using Subzy.Services;
 using Subzy.Services.Interfaces;
 using System.IO;
+using static Android.Icu.Text.ListFormatter;
 
 namespace Subzy.Platforms.Android.Services;
 
@@ -195,75 +198,51 @@ public class ScreenCaptureService : Service
         }
     }
 
-    bool IsProcessingScreenCapture = false;
     private async Task CaptureScreenshotAsync()
     {
-        if (IsProcessingScreenCapture)
-        {
-            _logger?.Debug("Previous screenshot processing still ongoing, skipping this cycle");
-            return;
-        }
-        IsProcessingScreenCapture = true;
-
         if (_imageReader == null)
         {
             _logger?.Warning("ImageReader not initialized");
             return;
         }
 
+        Bitmap bitmap = null;
+        global::Android.Media.Image image = null;
         try
         {
-            var image = _imageReader.AcquireLatestImage();
-            if (image == null)
+            using (image = _imageReader.AcquireLatestImage())
             {
-                _logger?.Debug("No image available");
-                return;
+                if (image != null)
+                {
+                    var planes = image.GetPlanes();
+                    if (planes != null && planes.Length > 0)
+                    {
+                        var buffer = planes[0].Buffer;
+                        if (buffer != null)
+                        {
+                            bitmap = Bitmap.CreateBitmap(image.Width, image.Height, Bitmap.Config.Argb8888!);
+                            buffer.Rewind(); // Ensure buffer position is at start
+                            bitmap.CopyPixelsFromBuffer(buffer);
+                        }
+                    }
+                    image.Close();
+                }
             }
 
-            using (image)
+
+            if (bitmap != null && _orchestrator != null)
             {
-                var planes = image.GetPlanes();
-                if (planes == null || planes.Length == 0)
+                using (bitmap)
                 {
-                    _logger?.Warning("No image planes available");
-                    return;
+                    LoggingService.SaveBitmapToPNG(bitmap, "screenshot");
+                    await _orchestrator.ProcessScreenshotAsync(bitmap);
+                    bitmap.Recycle();
                 }
-
-                var buffer = planes[0].Buffer;
-                if (buffer == null)
-                {
-                    _logger?.Warning("No buffer in image plane");
-                    return;
-                }
-
-                var bytes = new byte[buffer.Remaining()];
-                buffer.Get(bytes);
-
-                // Convert to bitmap and then to byte array
-                var bitmap = Bitmap.CreateBitmap(image.Width, image.Height, Bitmap.Config.Argb8888!);
-                buffer.Rewind();
-                bitmap.CopyPixelsFromBuffer(buffer);
-
-                using var stream = new MemoryStream();
-                await bitmap.CompressAsync(Bitmap.CompressFormat.Png!, 100, stream);
-                var imageBytes = stream.ToArray();
-
-                // Process through workflow
-                if (_orchestrator != null)
-                {
-                    await _orchestrator.ProcessScreenshotAsync(imageBytes);
-                }
-
-                bitmap.Recycle();
             }
         }
         catch (Exception ex)
         {
             _logger?.Error("Failed to capture screenshot", ex);
-        }
-        finally
-        {
-            IsProcessingScreenCapture = false;
         }
     }
 

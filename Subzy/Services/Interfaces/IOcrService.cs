@@ -1,3 +1,5 @@
+using Android.Graphics;
+
 namespace Subzy.Services.Interfaces;
 
 /// <summary>
@@ -14,10 +16,10 @@ public interface IOcrService
     /// <summary>
     /// Extracts text from an image.
     /// </summary>
-    /// <param name="imageBytes">Image data as byte array</param>
+    /// <param name="bitmap">Image data as Bitmap</param>
     /// <param name="language">Language code for OCR (e.g., "eng" for English)</param>
     /// <returns>Extracted text</returns>
-    Task<string> ExtractTextAsync(byte[] imageBytes, string language = "eng");
+    Task<string> ExtractTextAsync(Bitmap bitmap, string language = "eng");
 
     /// <summary>
     /// Checks if the OCR service is initialized and ready.

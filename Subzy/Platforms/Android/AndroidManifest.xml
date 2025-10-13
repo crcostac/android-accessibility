@@ -5,6 +5,9 @@
 		<service android:name=".Services.ScreenCaptureService" 
 		         android:foregroundServiceType="mediaProjection"
 		         android:exported="false" />
+        <meta-data
+			android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+			android:value="ocr" />
 	</application>
 	
 	<!-- Required permissions for Subzy functionality -->

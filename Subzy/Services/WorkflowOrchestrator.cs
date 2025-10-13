@@ -1,3 +1,4 @@
+using Android.Graphics;
 using Subzy.Models;
 using Subzy.Services.Interfaces;
 using System.Diagnostics;
@@ -52,7 +53,7 @@ public class WorkflowOrchestrator
     /// </summary>
     /// <param name="screenshotBytes">Raw screenshot data</param>
     /// <returns>Processing result with timing information</returns>
-    public async Task<ProcessingResult> ProcessScreenshotAsync(byte[] screenshotBytes)
+    public async Task<ProcessingResult> ProcessScreenshotAsync(Bitmap bitmapScreenshot)
     {
         var overallStopwatch = Stopwatch.StartNew();
         var result = new ProcessingResult { Success = true };
@@ -77,19 +78,22 @@ public class WorkflowOrchestrator
 
             // Stage 2: Color Filter + Noise Removal (~20-25ms)
             stopwatch.Restart();
-            var filteredImage = await _imageProcessor.FilterAndCleanSubtitlePixelsAsync(
-                screenshotBytes,
-                colorProfile.SubtitleColors,
-                settings.SubtitleColorTolerance,
-                settings.MinSameColorNeighbors
-            );
+            var bitmapFiltered = bitmapScreenshot;
+            //await _imageProcessor.FilterAndCleanSubtitlePixelsAsync(
+            //    screenshotBytes,
+            //    colorProfile.SubtitleColors,
+            //    settings.SubtitleColorTolerance,
+            //    settings.MinSameColorNeighbors
+            //);
             result.ProcessingTime = stopwatch.Elapsed;
             _logger.Debug($"Color filtering completed in {stopwatch.ElapsedMilliseconds}ms");
+
+            LoggingService.SaveBitmapToPNG(bitmapFiltered, "filtered");
 
             // Stage 3: Perceptual Hashing (~10ms)
             stopwatch.Restart();
             var hasChanged = settings.UsePerceptualHashing 
-                ? _changeDetector.HasChanged(filteredImage)
+                ? _changeDetector.HasChanged(bitmapFiltered)
                 : true; // Always run OCR if perceptual hashing disabled
             
             result.ContentChanged = hasChanged;
@@ -104,9 +108,9 @@ public class WorkflowOrchestrator
 
             // Stage 4: Run OCR (~200-500ms)
             stopwatch.Restart();
-            var extractedText = await _ocrService.ExtractTextAsync(filteredImage);
+            var extractedText = await _ocrService.ExtractTextAsync(bitmapFiltered);
             result.OcrTime = stopwatch.Elapsed;
-            _logger.Debug($"OCR completed in {stopwatch.ElapsedMilliseconds}ms");
+            _logger.Debug($"OCR completed in {stopwatch.ElapsedMilliseconds}ms, extracted text: {extractedText}");
 
             if (string.IsNullOrWhiteSpace(extractedText))
             {

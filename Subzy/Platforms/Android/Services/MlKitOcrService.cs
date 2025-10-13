@@ -52,7 +52,7 @@ public class MlKitOcrService : IOcrService
         return Task.CompletedTask;
     }
 
-    public async Task<string> ExtractTextAsync(byte[] imageBytes, string language = "eng")
+    public async Task<string> ExtractTextAsync(Bitmap bitmap, string language = "eng")
     {
         if (!_isInitialized)
         {
@@ -67,14 +67,6 @@ public class MlKitOcrService : IOcrService
 
         try
         {
-            // Convert byte[] to Bitmap
-            var bitmap = await BitmapFactory.DecodeByteArrayAsync(imageBytes, 0, imageBytes.Length);
-            if (bitmap == null)
-            {
-                _logger.Error("Failed to decode image bytes to Bitmap");
-                return string.Empty;
-            }
-
             // Convert Bitmap to InputImage
             var inputImage = InputImage.FromBitmap(bitmap, 0);
 
@@ -122,6 +114,9 @@ public class MlKitOcrService : IOcrService
         catch (Exception ex)
         {
             _logger.Error("Failed to extract text from image using ML Kit", ex);
+
+            // Reset initialization state to allow retry
+            _isInitialized = false;
             return string.Empty;
         }
     }

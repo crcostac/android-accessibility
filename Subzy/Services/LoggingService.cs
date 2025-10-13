@@ -130,4 +130,23 @@ public class LoggingService : ILoggingService
             // Silently fail
         }
     }
+
+    public static void SaveBitmapToPNG(Android.Graphics.Bitmap bitmap, string filePrefix)
+    {
+        try
+        {
+            using var stream = new MemoryStream();
+            bitmap.Compress(Android.Graphics.Bitmap.CompressFormat.Png!, 100, stream);
+            var pngBytes = stream.ToArray();
+            File.WriteAllBytes(System.IO.Path.Combine(
+                global::Android.OS.Environment.ExternalStorageDirectory!.AbsolutePath,
+                "Download",
+                $"{filePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.png"),
+                pngBytes);
+        }
+        catch (Exception ex)
+        {
+            // ignore, debug only
+        }
+    }
 }

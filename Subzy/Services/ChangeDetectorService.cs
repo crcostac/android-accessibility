@@ -1,5 +1,6 @@
 using Subzy.Services.Interfaces;
 using SkiaSharp;
+using Android.Graphics;
 
 namespace Subzy.Services;
 
@@ -22,13 +23,13 @@ public class ChangeDetectorService
     /// Detects if the current image has changed significantly from the previous one.
     /// Uses perceptual hashing (dHash) for fast and accurate change detection.
     /// </summary>
-    /// <param name="imageBytes">Current image data</param>
+    /// <param name="bitmap">Current image data</param>
     /// <returns>True if image has changed, false if similar to previous</returns>
-    public bool HasChanged(byte[] imageBytes)
+    public bool HasChanged(Bitmap bitmap)
     {
         try
         {
-            var currentHash = ComputePerceptualHash(imageBytes);
+            var currentHash = ComputePerceptualHash(bitmap);
             
             if (_previousPerceptualHash == null)
             {
@@ -72,16 +73,28 @@ public class ChangeDetectorService
     /// Computes perceptual hash using dHash algorithm.
     /// Resizes image to 9x8, compares horizontal adjacent pixels.
     /// </summary>
-    private ulong ComputePerceptualHash(byte[] imageBytes)
+    private ulong ComputePerceptualHash(Bitmap bitmap)
     {
-        using var inputStream = new MemoryStream(imageBytes);
-        using var originalBitmap = SKBitmap.Decode(inputStream);
-        
-        if (originalBitmap == null)
-            return 0;
+        var skBitmap = new SKBitmap(bitmap.Width, bitmap.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+
+        // Lock Android Bitmap pixels
+        var intPtr = bitmap.LockPixels();
+        try
+        {
+            // Install pixels directly into SKBitmap
+            skBitmap.InstallPixels(
+                new SKImageInfo(bitmap.Width, bitmap.Height, SKColorType.Bgra8888, SKAlphaType.Premul),
+                intPtr,
+                bitmap.RowBytes,
+                null, null);
+        }
+        finally
+        {
+            bitmap.UnlockPixels();
+        }
 
         // Resize to 9x8 pixels using low quality filter (fast)
-        using var resizedBitmap = originalBitmap.Resize(new SKImageInfo(9, 8), SKFilterQuality.Low);
+        using var resizedBitmap = skBitmap.Resize(new SKImageInfo(9, 8), SKFilterQuality.Low);
         
         if (resizedBitmap == null)
             return 0;

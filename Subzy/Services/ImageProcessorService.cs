@@ -146,19 +146,20 @@ public class ImageProcessorService : IImageProcessor
 
                         if (matchesColor)
                         {
-                            // Count neighbors with the SAME color as current pixel
-                            var sameColorNeighbors = CountSameColorNeighbors(bitmap, x, y, pixel, colorTolerance);
-                            
-                            if (sameColorNeighbors >= minNeighbors)
-                            {
-                                // Keep the pixel
-                                outputBitmap.SetPixel(x, y, pixel);
-                            }
-                            else
-                            {
-                                // Remove noise - set to black/transparent
-                                outputBitmap.SetPixel(x, y, SKColors.Black);
-                            }
+                            outputBitmap.SetPixel(x, y, pixel);
+                            // // Count neighbors with the SAME color as current pixel
+                            // var sameColorNeighbors = CountSameColorNeighbors(bitmap, x, y, pixel, colorTolerance);
+                            // 
+                            // if (sameColorNeighbors >= minNeighbors)
+                            // {
+                            //     // Keep the pixel
+                            //     outputBitmap.SetPixel(x, y, pixel);
+                            // }
+                            // else
+                            // {
+                            //     // Remove noise - set to black/transparent
+                            //     outputBitmap.SetPixel(x, y, SKColors.Black);
+                            // }
                         }
                         else
                         {

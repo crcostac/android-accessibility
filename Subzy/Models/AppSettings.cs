@@ -7,47 +7,47 @@ public class AppSettings
 {
     // Service Control
     public bool IsServiceEnabled { get; set; }
-    public int SnapshotFrequencySeconds { get; set; } = 2;
+    public int SnapshotFrequencySeconds { get; set; }
 
     // Image Processing
-    public float Brightness { get; set; } = 1.0f;
-    public float Contrast { get; set; } = 1.0f;
+    public float Brightness { get; set; }
+    public float Contrast { get; set; }
 
     // Translation Settings
-    public bool IsTranslationEnabled { get; set; } = true;
-    public string TargetLanguage { get; set; } = "ro"; // Romanian by default
+    public bool IsTranslationEnabled { get; set; }
+    public string TargetLanguage { get; set; }
 
     // Text-to-Speech Settings
-    public bool IsTtsEnabled { get; set; } = true;
-    public string TtsVoice { get; set; } = "ro-RO-AlinaNeural";
+    public bool IsTtsEnabled { get; set; }
+    public string TtsVoice { get; set; }
 
     // Region of Interest (ROI) for subtitles
-    public int RoiX { get; set; } = 0;
-    public int RoiY { get; set; } = 0;
-    public int RoiWidth { get; set; } = 0;
-    public int RoiHeight { get; set; } = 0;
+    public int RoiX { get; set; }
+    public int RoiY { get; set; }
+    public int RoiWidth { get; set; }
+    public int RoiHeight { get; set; }
 
     // Azure API Configuration
-    public string AzureTranslatorKey { get; set; } = "";
-    public string AzureTranslatorRegion { get; set; } = "global";
-    public string AzureSpeechKey { get; set; } = "";
-    public string AzureSpeechRegion { get; set; } = "italynorth";
+    public string AzureTranslatorKey { get; set; }
+    public string AzureTranslatorRegion { get; set; }
+    public string AzureSpeechKey { get; set; }
+    public string AzureSpeechRegion { get; set; }
 
     // Resource Management
-    public bool AdaptiveScheduling { get; set; } = true;
-    public int LowBatteryThreshold { get; set; } = 20;
+    public bool AdaptiveScheduling { get; set; }
+    public int LowBatteryThreshold { get; set; }
 
     // Onboarding
     public bool HasCompletedOnboarding { get; set; }
 
     // Color Detection
-    public int MaxColorsPerApp { get; set; } = 5;
-    public int SubtitleColorTolerance { get; set; } = 30;
+    public int MaxColorsPerApp { get; set; }
+    public int SubtitleColorTolerance { get; set; }
 
     // Noise Removal
-    public int MinSameColorNeighbors { get; set; } = 2;
+    public int MinSameColorNeighbors { get; set; }
 
     // Perceptual Hashing
-    public bool UsePerceptualHashing { get; set; } = true;
-    public int HashSimilarityThreshold { get; set; } = 8;
+    public bool UsePerceptualHashing { get; set; }
+    public int HashSimilarityThreshold { get; set; }
 }
