@@ -1,0 +1,83 @@
+DEBUG PAGE UI LAYOUT
+====================
+
++------------------------------------------------------------------+
+|                        Debug Console                             |
+|                        (Title, centered)                         |
++------------------------------------------------------------------+
+|                                                                  |
+| PNG Files from Downloads                         [Refresh]      |
+| +--------------------------------------------------------------+ |
+| | /storage/emulated/0/Download/screenshot1.png                 | |
+| | /storage/emulated/0/Download/image_with_text.png    <--SELECTED|
+| | /storage/emulated/0/Download/test_image.png                  | |
+| +--------------------------------------------------------------+ |
+|                                                                  |
++------------------------------------------------------------------+
+|                                                                  |
+| +----------------------------+ +----------------------------+    |
+| | Selected Image             | | OCR Result                |    |
+| | +------------------------+ | | +------------------------+ |    |
+| | |                        | | | | Hello World!           | |    |
+| | |   [Image Preview]      | | | | This is some text      | |    |
+| | |                        | | | | extracted from the     | |    |
+| | |    (Aspect Fit)        | | | | selected image using   | |    |
+| | |                        | | | | ML Kit OCR.            | |    |
+| | +------------------------+ | | |                        | |    |
+| |                            | | | (Scrollable Editor)    | |    |
+| +----------------------------+ | +------------------------+ |    |
+|                                +----------------------------+    |
++------------------------------------------------------------------+
+|                                                                  |
+| Debug Output                                                     |
+| +--------------------------------------------------------------+ |
+| | === Loading PNG Files ===                                    | |
+| | Scanning: /storage/emulated/0/Download                       | |
+| | Found 3 PNG file(s)                                          | |
+| | === Processing Image ===                                     | |
+| | File: image_with_text.png                                    | |
+| | Image loaded: 800x600                                        | |
+| | Performing OCR...                                            | |
+| | OCR completed. Extracted 45 characters                       | |
+| | Text: Hello World! This is some text...                      | |
+| +--------------------------------------------------------------+ |
+|                                                                  |
++------------------------------------------------------------------+
+|                                                                  |
+| [Test OCR]    [Test Translation]                                |
+| [Test TTS]    [View Logs]                                       |
+|                                                                  |
++------------------------------------------------------------------+
+
+INTERACTION FLOW:
+-----------------
+
+1. User opens Debug Page
+   ↓
+2. PNG files automatically loaded from Downloads folder
+   ↓
+3. User taps on a PNG file in the list
+   ↓
+4. Selected file is highlighted
+   ↓
+5. Image is displayed in "Selected Image" section
+   ↓
+6. OCR is automatically triggered
+   ↓
+7. Extracted text appears in "OCR Result" section
+   ↓
+8. Processing details logged in Debug Output
+
+KEY FEATURES:
+-------------
+- Real-time file selection and processing
+- Side-by-side image and OCR result viewing
+- Detailed debug logging
+- Manual refresh capability
+- Existing test buttons remain functional
+
+PERMISSIONS:
+------------
+- READ_EXTERNAL_STORAGE (Android 12-)
+- READ_MEDIA_IMAGES (Android 13+)
+- Requested automatically on first access
