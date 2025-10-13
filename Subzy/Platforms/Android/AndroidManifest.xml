@@ -20,6 +20,9 @@
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" 
 	                 android:protectionLevel="signature|privileged|appop|pre23|installer|verifier|preinstalled" />
+	<!-- Storage permissions for accessing Downloads folder -->
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 	
 	<!-- Queries for checking if specific apps are installed -->
 	<queries>

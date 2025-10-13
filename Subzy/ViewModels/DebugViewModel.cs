@@ -6,6 +6,7 @@ using Subzy.Models;
 using Subzy.Services;
 using Subzy.Services.Interfaces;
 using System.Text;
+using System.Collections.ObjectModel;
 
 namespace Subzy.ViewModels;
 
@@ -38,6 +39,18 @@ public partial class DebugViewModel : ObservableObject
 
     private byte[]? _testImageBytes;
 
+    [ObservableProperty]
+    private ObservableCollection<string> _pngFiles = new();
+
+    [ObservableProperty]
+    private string? _selectedPngFile;
+
+    [ObservableProperty]
+    private ImageSource? _selectedImage;
+
+    [ObservableProperty]
+    private string _ocrResultText = string.Empty;
+
     public DebugViewModel(
         ILoggingService logger,
         SettingsService settingsService,
@@ -54,6 +67,9 @@ public partial class DebugViewModel : ObservableObject
         _orchestrator = orchestrator;
 
         LoadSystemInfo();
+        
+        // Load PNG files asynchronously (fire and forget)
+        _ = LoadPngFilesAsync();
     }
 
     private void LoadSystemInfo()
@@ -329,6 +345,153 @@ public partial class DebugViewModel : ObservableObject
     private void ClearOutput()
     {
         LoadSystemInfo();
+    }
+
+    [RelayCommand]
+    private async Task LoadPngFilesAsync()
+    {
+        try
+        {
+            AppendOutput("\n=== Loading PNG Files ===");
+
+#if ANDROID
+            // Check and request storage permissions for Android 13+ (API 33+)
+            var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+            if (status != PermissionStatus.Granted)
+            {
+                AppendOutput("Requesting storage permission...");
+                status = await Permissions.RequestAsync<Permissions.StorageRead>();
+                
+                if (status != PermissionStatus.Granted)
+                {
+                    AppendOutput("Storage permission denied. Cannot access Downloads folder.");
+                    return;
+                }
+            }
+
+            var downloadsPath = Android.OS.Environment.GetExternalStoragePublicDirectory(
+                Android.OS.Environment.DirectoryDownloads)?.AbsolutePath;
+#else
+            var downloadsPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Downloads");
+#endif
+
+            if (string.IsNullOrEmpty(downloadsPath) || !Directory.Exists(downloadsPath))
+            {
+                AppendOutput($"Downloads folder not found: {downloadsPath ?? "null"}");
+                return;
+            }
+
+            AppendOutput($"Scanning: {downloadsPath}");
+            
+            var pngFiles = Directory.GetFiles(downloadsPath, "*.png", SearchOption.TopDirectoryOnly);
+            
+            PngFiles.Clear();
+            foreach (var file in pngFiles)
+            {
+                PngFiles.Add(file);
+            }
+
+            AppendOutput($"Found {PngFiles.Count} PNG file(s)");
+            
+            if (PngFiles.Count == 0)
+            {
+                AppendOutput("No PNG files found in Downloads folder");
+            }
+        }
+        catch (Exception ex)
+        {
+            AppendOutput($"Error loading PNG files: {ex.Message}");
+            _logger.Error("Failed to load PNG files", ex);
+        }
+    }
+
+    partial void OnSelectedPngFileChanged(string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            _ = LoadAndProcessSelectedImageAsync(value);
+        }
+    }
+
+    private async Task LoadAndProcessSelectedImageAsync(string filePath)
+    {
+        try
+        {
+            AppendOutput($"\n=== Processing Image ===");
+            AppendOutput($"File: {Path.GetFileName(filePath)}");
+
+            // Load image for display
+            SelectedImage = ImageSource.FromFile(filePath);
+
+            // Perform OCR on the image
+            await PerformOcrOnFileAsync(filePath);
+        }
+        catch (Exception ex)
+        {
+            AppendOutput($"Error loading image: {ex.Message}");
+            _logger.Error("Failed to load and process image", ex);
+        }
+    }
+
+    private async Task PerformOcrOnFileAsync(string filePath)
+    {
+        try
+        {
+            AppendOutput("Initializing OCR...");
+
+            if (!_ocrService.IsInitialized)
+            {
+                await _ocrService.InitializeAsync();
+                
+                if (!_ocrService.IsInitialized)
+                {
+                    OcrResultText = "[OCR service not initialized]";
+                    AppendOutput("OCR initialization failed");
+                    return;
+                }
+            }
+
+            AppendOutput("Loading image for OCR...");
+
+#if ANDROID
+            // Load image as Android Bitmap for OCR
+            using var bitmap = await Android.Graphics.BitmapFactory.DecodeFileAsync(filePath);
+            
+            if (bitmap == null)
+            {
+                OcrResultText = "[Failed to decode image]";
+                AppendOutput("Failed to decode image file");
+                return;
+            }
+
+            AppendOutput($"Image loaded: {bitmap.Width}x{bitmap.Height}");
+            AppendOutput("Performing OCR...");
+
+            var extractedText = await _ocrService.ExtractTextAsync(bitmap);
+            
+            OcrResultText = string.IsNullOrEmpty(extractedText) 
+                ? "[No text detected]" 
+                : extractedText;
+
+            AppendOutput($"OCR completed. Extracted {extractedText.Length} characters");
+            
+            if (!string.IsNullOrEmpty(extractedText))
+            {
+                AppendOutput($"Text: {extractedText}");
+            }
+#else
+            OcrResultText = "[OCR only available on Android]";
+            AppendOutput("OCR only available on Android platform");
+#endif
+        }
+        catch (Exception ex)
+        {
+            OcrResultText = $"[OCR Error: {ex.Message}]";
+            AppendOutput($"OCR error: {ex.Message}");
+            _logger.Error("Failed to perform OCR on file", ex);
+        }
     }
 
     private void AppendOutput(string text)
