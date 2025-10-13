@@ -1,12 +1,10 @@
 using Subzy.Services.Interfaces;
 using SkiaSharp;
+using Android.Graphics;
+using System.Runtime.CompilerServices;
 
 namespace Subzy.Services;
 
-/// <summary>
-/// Service for image processing operations including cropping and enhancement.
-/// Uses SkiaSharp for image manipulation and OCR optimization.
-/// </summary>
 public class ImageProcessorService : IImageProcessor
 {
     private readonly ILoggingService _logger;
@@ -16,179 +14,117 @@ public class ImageProcessorService : IImageProcessor
         _logger = logger;
     }
 
-    public async Task<byte[]> CropImageAsync(byte[] imageBytes, int x, int y, int width, int height)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                // For now, return original image as cropping requires platform-specific implementation
-                // This would typically use SkiaSharp or similar library for actual cropping
-                _logger.Debug($"Crop requested: x={x}, y={y}, width={width}, height={height}");
-                return imageBytes;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Failed to crop image", ex);
-                return imageBytes;
-            }
-        });
-    }
-
-    public async Task<byte[]> AdjustContrastAsync(byte[] imageBytes, float contrastFactor)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                // Contrast adjustment would require image manipulation library
-                // For now, return original image
-                _logger.Debug($"Contrast adjustment requested: factor={contrastFactor}");
-                return imageBytes;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Failed to adjust contrast", ex);
-                return imageBytes;
-            }
-        });
-    }
-
-    public async Task<byte[]> AdjustBrightnessAsync(byte[] imageBytes, float brightnessFactor)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                // Brightness adjustment would require image manipulation library
-                // For now, return original image
-                _logger.Debug($"Brightness adjustment requested: factor={brightnessFactor}");
-                return imageBytes;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Failed to adjust brightness", ex);
-                return imageBytes;
-            }
-        });
-    }
-
-    public async Task<byte[]> EnhanceImageAsync(byte[] imageBytes, float brightness = 1.0f, float contrast = 1.0f)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                var result = imageBytes;
-                
-                if (Math.Abs(brightness - 1.0f) > 0.01f)
-                {
-                    result = AdjustBrightnessAsync(result, brightness).Result;
-                }
-                
-                if (Math.Abs(contrast - 1.0f) > 0.01f)
-                {
-                    result = AdjustContrastAsync(result, contrast).Result;
-                }
-                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Failed to enhance image", ex);
-                return imageBytes;
-            }
-        });
-    }
-
-    public async Task<byte[]> FilterAndCleanSubtitlePixelsAsync(
-        byte[] imageBytes, 
+    public Bitmap FilterAndCleanSubtitlePixels(
+        Bitmap bitmap,
         List<SKColor> subtitleColors,
         int colorTolerance = 30,
         int minNeighbors = 2)
     {
-        return await Task.Run(() =>
+        if (bitmap == null) throw new ArgumentNullException(nameof(bitmap));
+        try
         {
-            try
-            {
-                using var inputStream = new MemoryStream(imageBytes);
-                using var bitmap = SKBitmap.Decode(inputStream);
-                
-                if (bitmap == null)
-                {
-                    _logger.Error("Failed to decode image for filtering");
-                    return imageBytes;
-                }
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+            int length = width * height;
 
-                var width = bitmap.Width;
-                var height = bitmap.Height;
-                
-                // Create output bitmap
-                using var outputBitmap = new SKBitmap(width, height);
-                
-                // Single pass: check color match and count neighbors
+            // Extract pixels
+            var source = new int[length];
+            bitmap.GetPixels(source, 0, width, 0, 0, width, height);
+
+            // Output buffer (avoid in-place until after noise removal)
+            var output = new int[length];
+
+            // Pre-extract target colors (RGB) for faster loop
+            var targetColors = new (byte R, byte G, byte B)[subtitleColors.Count];
+            for (int i = 0; i < subtitleColors.Count; i++)
+            {
+                var c = subtitleColors[i];
+                targetColors[i] = (c.Red, c.Green, c.Blue);
+            }
+
+            // First pass: color mask
+            var mask = new bool[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                int argb = source[i];
+                // Android int pixel: AARRGGBB
+                byte r = (byte)((argb >> 16) & 0xFF);
+                byte g = (byte)((argb >> 8) & 0xFF);
+                byte b = (byte)(argb & 0xFF);
+
+                if (MatchesAny(targetColors, r, g, b, colorTolerance))
+                {
+                    mask[i] = true;
+                    output[i] = argb; // keep original color
+                }
+                else
+                {
+                    output[i] = unchecked((int)0xFF000000); // opaque black
+                }
+            }
+
+            if (minNeighbors > 0)
+            {
+                // Second pass: prune isolated pixels
+                var pruned = new int[length];
+                Array.Copy(output, pruned, length);
+
                 for (int y = 0; y < height; y++)
                 {
+                    int rowOffset = y * width;
                     for (int x = 0; x < width; x++)
                     {
-                        var pixel = bitmap.GetPixel(x, y);
-                        
-                        // Check if pixel matches any subtitle color
-                        var matchesColor = false;
-                        foreach (var targetColor in subtitleColors)
-                        {
-                            if (IsColorMatch(pixel, targetColor, colorTolerance))
-                            {
-                                matchesColor = true;
-                                break;
-                            }
-                        }
+                        int idx = rowOffset + x;
+                        if (!mask[idx]) continue;
 
-                        if (matchesColor)
+                        int neighbors = CountSameMaskNeighbors(mask, width, height, x, y);
+                        if (neighbors < minNeighbors)
                         {
-                            outputBitmap.SetPixel(x, y, pixel);
-                            // // Count neighbors with the SAME color as current pixel
-                            // var sameColorNeighbors = CountSameColorNeighbors(bitmap, x, y, pixel, colorTolerance);
-                            // 
-                            // if (sameColorNeighbors >= minNeighbors)
-                            // {
-                            //     // Keep the pixel
-                            //     outputBitmap.SetPixel(x, y, pixel);
-                            // }
-                            // else
-                            // {
-                            //     // Remove noise - set to black/transparent
-                            //     outputBitmap.SetPixel(x, y, SKColors.Black);
-                            // }
-                        }
-                        else
-                        {
-                            // Not a subtitle color - set to black/transparent
-                            outputBitmap.SetPixel(x, y, SKColors.Black);
+                            pruned[idx] = unchecked((int)0xFF000000);
+                            mask[idx] = false;
                         }
                     }
                 }
 
-                // Encode to PNG
-                using var outputStream = new MemoryStream();
-                using var image = SKImage.FromBitmap(outputBitmap);
-                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-                data.SaveTo(outputStream);
-                
-                _logger.Debug($"Filtered image: {width}x{height}, {subtitleColors.Count} colors, tolerance={colorTolerance}");
-                return outputStream.ToArray();
+                output = pruned;
             }
-            catch (Exception ex)
-            {
-                _logger.Error("Failed to filter subtitle pixels", ex);
-                return imageBytes;
-            }
-        });
+
+            _logger.Debug($"Filtered (fast) bitmap: {width}x{height}, colors={subtitleColors.Count}, tol={colorTolerance}, minNeighbors={minNeighbors}");
+
+            // Write the pixels back into a new Bitmap
+            Bitmap outputBitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
+            outputBitmap.SetPixels(output, 0, width, 0, 0, width, height);
+            return outputBitmap;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error("Failed to filter subtitle pixels (Android Bitmap), returning original image", ex);
+            return bitmap;
+        }
     }
 
-    /// <summary>
-    /// Checks if two colors match within tolerance.
-    /// </summary>
+    private static bool MatchesAny(List<SKColor> subtitleColors, SKColor pixel, int tolerance)
+    {
+        foreach (var c in subtitleColors)
+            if (IsColorMatch(pixel, c, tolerance))
+                return true;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool MatchesAny((byte R, byte G, byte B)[] targets, byte r, byte g, byte b, int tolerance)
+    {
+        foreach (var (R, G, B) in targets)
+        {
+            int dr = Math.Abs(r - R);
+            int dg = Math.Abs(g - G);
+            int db = Math.Abs(b - B);
+            if ((dr + dg + db) <= tolerance) return true;
+        }
+        return false;
+    }
+
     private static bool IsColorMatch(SKColor c1, SKColor c2, int tolerance)
     {
         var dr = Math.Abs(c1.Red - c2.Red);
@@ -197,36 +133,22 @@ public class ImageProcessorService : IImageProcessor
         return (dr + dg + db) <= tolerance;
     }
 
-    /// <summary>
-    /// Counts 8-connected neighbors with the same color as the reference pixel.
-    /// </summary>
-    private static int CountSameColorNeighbors(SKBitmap bitmap, int x, int y, SKColor refColor, int tolerance)
+    private static int CountSameMaskNeighbors(bool[] mask, int width, int height, int x, int y)
     {
-        var count = 0;
-        var width = bitmap.Width;
-        var height = bitmap.Height;
-
-        // Check all 8 surrounding pixels
+        int count = 0;
         for (int dy = -1; dy <= 1; dy++)
         {
+            int ny = y + dy;
+            if (ny < 0 || ny >= height) continue;
+            int rowOffset = ny * width;
             for (int dx = -1; dx <= 1; dx++)
             {
-                if (dx == 0 && dy == 0) continue; // Skip center pixel
-                
-                var nx = x + dx;
-                var ny = y + dy;
-                
-                if (nx >= 0 && nx < width && ny >= 0 && ny < height)
-                {
-                    var neighborColor = bitmap.GetPixel(nx, ny);
-                    if (IsColorMatch(neighborColor, refColor, tolerance))
-                    {
-                        count++;
-                    }
-                }
+                int nx = x + dx;
+                if (nx < 0 || nx >= width) continue;
+                if (dx == 0 && dy == 0) continue;
+                if (mask[rowOffset + nx]) count++;
             }
         }
-
         return count;
     }
 }

@@ -180,7 +180,11 @@ public partial class DebugViewModel : ObservableObject
 
             // Perform OCR on the generated image
             AppendOutput("Performing OCR on generated image...");
-            var extractedText = await _ocrService.ExtractTextAsync(_testImageBytes);
+            string extractedText = null;
+            using (var androidBitmap = Android.Graphics.BitmapFactory.DecodeByteArray(_testImageBytes, 0, _testImageBytes.Length))
+            {
+                extractedText = await _ocrService.ExtractTextAsync(androidBitmap);
+            }
 
             // Display results
             AppendOutput($"Extracted Text: \"{extractedText}\"");
@@ -357,12 +361,12 @@ public partial class DebugViewModel : ObservableObject
 #if ANDROID
             // Check and request storage permissions for Android 13+ (API 33+)
             var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
-            if (status != PermissionStatus.Granted)
+            if (status != Microsoft.Maui.ApplicationModel.PermissionStatus.Granted)
             {
                 AppendOutput("Requesting storage permission...");
                 status = await Permissions.RequestAsync<Permissions.StorageRead>();
                 
-                if (status != PermissionStatus.Granted)
+                if (status != Microsoft.Maui.ApplicationModel.PermissionStatus.Granted)
                 {
                     AppendOutput("Storage permission denied. Cannot access Downloads folder.");
                     return;

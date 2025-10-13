@@ -1,120 +1,60 @@
-# Project Specification
+# Project Specification: Android Subtitle Reader & Translator
 
-## 1. Introduction
-... (existing content)
+## Project Intent
 
-## 5. Optimized OCR Workflow
-The new 5-stage OCR workflow includes:
-- **Stage 1**: Image Acquisition
-- **Stage 2**: Preprocessing with per-app color profiles
-- **Stage 3**: Text Recognition with foreground app detection
-- **Stage 4**: Post-Processing using perceptual hashing for change detection
-- **Stage 5**: Output Generation
+The purpose of this project is to develop an Android application, primarily designed for Android TV but ideally compatible with Android phones as well, to enhance accessibility for users with low vision and other print disabilities by capturing, translating, and speaking aloud on-screen subtitles.
 
-This optimized pipeline enhances efficiency and accuracy.
+## Core Features
 
-## 6. Performance Optimization
-The performance of the OCR system has been optimized through several strategies:
-- **Adaptive Processing**: Tailors processing based on the foreground app.
-- **Caching Mechanisms**: Reduces repeated calculations for the same images.
+- **Multi-application Screen Capture Support:** Work across various streaming apps (Netflix, HBO, Amazon Prime, etc.) regardless of their accessibility support by reading pixels from the screen.
+- **Subtitle Reading:** Use Xamarin.Tesseract OCR (Optical Character Recognition) to capture and read subtitles directly from the screen image, independent of app accessibility APIs.
+- **Translation:** Translate subtitles from English to Romanian (primary), with extensibility for other languages. Use cloud-based translation via Microsoft Azure Translator for high-quality, low-latency translations.
+- **Text-to-Speech:** Speak subtitles aloud using Romanian as the primary voice. Use cloud-based neural TTS via Microsoft Azure for expressive, natural speech inflexion.
+- **Permissions:** Accept the need for full administrator or accessibility permissions to capture the displayed image on the device.
+- **Development Framework:** Use C# with .NET MAUI for cross-platform Android development.
+- **Extensibility:** Design interfaces for translation, TTS, and OCR to support additional languages or providers in the future. Abstract interface to allow easy swapping or extension to other providers for OCR, TTS and Translation.
+- **Performance:** Image capture and preprocessing must be highly optimized. Ensure no unnecessary bitmap conversions, avoid GetPixel/SetPixel calls for each pixel. Use efficient algorithms for color filtering and noise removal.
 
-## 7. Per-App Color Profiles
-The per-app color profile system allows for customized processing based on the application's color scheme, improving text recognition accuracy.
+## Per-component Specification
 
-## 8. Interactive Color Picker
-An interactive color picker will be integrated to allow users to select and adjust color profiles for their specific needs.
+### Screen Capture
+- Configurable snapshot frequency (e.g., every 0.5-5 seconds).
+- Efficient background service to minimize battery and CPU usage.
+- Handle permissions for screen capture with minimal user intervention (ideally ask once during installation).
+- Configurable: log captured images for debugging purposes.
 
-## 9. Performance Strategy
-We will implement performance monitoring to continually assess and optimize the OCR processing times.
+### Image Preprocessing
+- Interactive color picker to allow users to select subtitle colors from the screen.
+- Per-app color profiles to automatically switch subtitle colors based on the foreground app (eg Netflix app package name).
+- Blank out pixels not matching subtitle colors to improve OCR accuracy.
+- Optionally also blank out pixels that don't have sufficient neighbours of the same color (to remove noise).
+- Use perceptual hashing (dHash) to detect if the pre-processed screen content has changed significantly since the last capture, skipping OCR if unchanged.
 
-- Compare available local AI models for OCR on Android devices.
-- Investigate Android OS capabilities for screen capture, especially on Android TV and phones, including permission requirements and limitations.
-- Explore cloud-based translation and text-to-speech options, evaluating cost and integration strategies.
-- Assess potential challenges in supporting streaming apps and handling DRM or protected content.
+### OCR
+- Must be done on-device using Xamarin.Tesseract or similar library.
+- Must support Romanian characters and diacritics.
+- Do not continue to translate if OCR returns same text as last time.
 
-## Next Steps
+### Translation
+- Use Microsoft Azure Translator for high-quality translations.
+- Configurable target language (default Romanian).
+- Detect if the current language is already the target language, and skip translation if so.
+- Evaluate: can we include previous context (eg last N lines within X seconds) to improve translation quality, but without including old text in the output?
 
-This high-level specification serves as a foundation for further research and refinement. Options for implementation will be explored, focusing on quality, cost, and performance. A more detailed technical specification will follow.
+### Text-to-Speech
+- Use Microsoft Azure Neural TTS for natural-sounding speech.
+- Configurable voice (default Romanian).
+- Queue text to avoid overlapping speech.
+- Optionally include short pauses between sentences for better clarity.
+- Evaluate: can we include previous context (eg last N lines within X seconds) to improve speech naturalness, but without including old text in the output?
+- Evaluate: can we detect if OCR has returned garbled text (eg random characters) and skip TTS in that case?
+- Evaluate: can we just send the text to a LLM (eg GPT-4) to perform translation, normalization, inclusion of previous context, and TTS in one step?
 
----
+### Testing & Debugging
+- Debug UI for developers/testers to simulate and test the OCR, translation, and TTS pipeline.
+- Logging to local files (and optionally cloud, respecting privacy) for troubleshooting and diagnostics.
+- UI for OCR testing will show: list of captured images, UI element to show selected image, UI element to show the results of the OCR on the selected image. 
+- UI for Translation testing will show: text box to enter text, button to translate, text box to show translated text.
+- UI for TTS testing will show: text box to enter text, button to speak, status indicator for speaking.
+- UI for logging will show log entries and button to clear logs.
 
-## Implementation
-
-The following are the major code components and logic required for the implementation:
-
-1. **Project Skeleton**
-   - C# solution using .NET MAUI targeting Android (with extensibility for other platforms if needed).
-   - Entry point and basic navigation.
-
-2. **Background Service for Screen Capture**
-   - A service running in the background that periodically captures screenshots of the current screen.
-   - Handles permissions for capturing the screen on both Android TV and phones.
-   - Efficient scheduling of screenshot intervals.
-
-3. **Configuration UI**
-   - User interface for setting preferences:
-     - Enable/disable background service
-     - Snapshot frequency
-     - Image pre-processing options (e.g., brightness, contrast for OCR optimization)
-     - Enable/disable translation and target language selection
-     - Enable/disable TTS and select voice
-
-4. **Persistence of User Preferences**
-   - Mechanism to persist user settings and preferences across app sessions and device restarts.
-   - Use platform-appropriate storage APIs (e.g., Xamarin.Essentials Preferences, local SQLite, or .NET MAUI Preferences API).
-   - Load preferences at startup and apply them to UI and services.
-
-5. **Optimized 5-Stage OCR Workflow**
-   - **Stage 1: Detect Foreground App (~1ms)** - Uses UsageStatsManager to detect active app and load associated color profile
-   - **Stage 2: Color Filter + Noise Removal (~20-25ms)** - Single-pass algorithm that filters subtitle colors and removes noise based on neighbor analysis
-   - **Stage 3: Perceptual Hashing (~10ms)** - Uses dHash algorithm to detect changes; skips OCR if Hamming distance < threshold
-   - **Stage 4: Run OCR (~200-500ms)** - Only executed if hash indicates content changed; runs Tesseract on filtered image
-   - **Stage 5: Translation & TTS** - Existing logic for Azure Translator and Neural TTS
-   - **Performance:** Expected ~90% reduction in OCR operations (36ms vs 236-536ms per frame)
-
-6. **Per-App Color Profile System**
-   - **Color Profile Manager** - Manages dictionary of app package → color profile mappings
-   - **Foreground App Detection** - Uses UsageStatsManager API to detect currently active streaming app
-   - **MRU Color List** - Each app maintains up to 5 subtitle colors in Most Recently Used order
-   - **Interactive Color Picker** - Semi-transparent overlay with tap-to-pick functionality using histogram analysis
-   - **Automatic Profile Switching** - System automatically switches profiles when user changes apps
-   - **Profile Persistence** - Color profiles saved to JSON storage via SettingsService
-
-7. **Wrappers for External Services**
-   - **Tesseract OCR Wrapper:** Encapsulate interaction with Tesseract library for local OCR processing. Expose simple API for image-to-text conversion.
-   - **Azure Translator Wrapper:** Encapsulate calls to Azure Translator API, handle authentication, language selection, error handling, and API limits.
-   - **Azure TTS Wrapper:** Encapsulate calls to Azure Text-to-Speech API, manage voice selection, audio playback, and error conditions.
-   - Abstract interface to allow easy swapping or extension to other providers.
-
-8. **Error Handling & Logging**
-   - Centralized error handling for all critical operations (screen capture, OCR, translation, TTS).
-   - Logging to local files (and optionally cloud, respecting privacy) for troubleshooting and diagnostics.
-
-9. **Permission Management & Onboarding**
-   - User onboarding flow to guide initial setup, permissions requests, and accessibility service activation.
-   - UI elements to request and show permission status.
-
-10. **Accessibility and Usability**
-    - Ensure all UI elements are accessible (large text, high contrast, screen reader support).
-    - Provide in-app help and tooltips for visually impaired users.
-
-11. **Resource Management**
-    - Optimize resource usage to minimize battery drain and CPU load.
-    - Adaptive scheduling of background operations based on usage and device state.
-
-12. **Extensibility**
-    - Design interfaces for translation, TTS, and OCR to support additional languages or providers in the future.
-
-13. **Data Privacy**
-    - Make users aware of what data is processed locally and what is sent to cloud services.
-    - Ensure all transmissions to cloud APIs are secure.
-
-14. **Feedback & Reporting**
-    - Mechanism for users to report bugs, request features, and send diagnostic logs (optional).
-
-15. **Testing & Debugging**
-    - Debug UI for developers/testers to simulate and test the OCR, translation, and TTS pipeline.
-
----
-
-This implementation section provides a detailed outline to guide technical design and development. Further refinement and breakdown into specific classes, services, and UI components will take place during the detailed design phase.

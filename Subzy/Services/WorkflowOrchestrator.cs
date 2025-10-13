@@ -78,13 +78,12 @@ public class WorkflowOrchestrator
 
             // Stage 2: Color Filter + Noise Removal (~20-25ms)
             stopwatch.Restart();
-            var bitmapFiltered = bitmapScreenshot;
-            //await _imageProcessor.FilterAndCleanSubtitlePixelsAsync(
-            //    screenshotBytes,
-            //    colorProfile.SubtitleColors,
-            //    settings.SubtitleColorTolerance,
-            //    settings.MinSameColorNeighbors
-            //);
+            var bitmapFiltered = _imageProcessor.FilterAndCleanSubtitlePixels(
+                bitmapScreenshot,
+                colorProfile.SubtitleColors,
+                settings.SubtitleColorTolerance,
+                settings.MinSameColorNeighbors
+            );
             result.ProcessingTime = stopwatch.Elapsed;
             _logger.Debug($"Color filtering completed in {stopwatch.ElapsedMilliseconds}ms");
 
@@ -181,32 +180,6 @@ public class WorkflowOrchestrator
         }
 
         return result;
-    }
-
-    private async Task<byte[]> PreProcessImageAsync(byte[] imageBytes, AppSettings settings)
-    {
-        var processedImage = imageBytes;
-
-        // Crop to ROI if configured
-        if (settings.RoiWidth > 0 && settings.RoiHeight > 0)
-        {
-            processedImage = await _imageProcessor.CropImageAsync(
-                processedImage,
-                settings.RoiX,
-                settings.RoiY,
-                settings.RoiWidth,
-                settings.RoiHeight
-            );
-        }
-
-        // Enhance image for better OCR
-        processedImage = await _imageProcessor.EnhanceImageAsync(
-            processedImage,
-            settings.Brightness,
-            settings.Contrast
-        );
-
-        return processedImage;
     }
 
     /// <summary>

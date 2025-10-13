@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrated to Google ML Kit Text Recognition v2 for OCR
 - Added automatic language detection in OCR results
 - New MlKitOcrService with LastDetectedLanguage property for lightweight language inference
+- Alternative Xamarin.Tesseract-based OCR service (TesseractOcrService) added alongside MlKitOcrService for evaluation
 
 ### Changed
 - Replaced Tesseract OCR with Google ML Kit Text Recognition v2
@@ -73,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved OCR speed and accuracy with ML Kit's optimized text recognition
 - Enhanced multi-language support (Latin scripts including Romanian) without traineddata files
 - Diacritics now preserved natively by ML Kit
+- Default Android IOcrService now points to TesseractOcrService (MlKitOcrService retained for comparison)
 
 ### Removed
 - Removed Tesseract NuGet package dependency

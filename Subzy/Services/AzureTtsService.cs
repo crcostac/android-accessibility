@@ -66,7 +66,7 @@ public class AzureTtsService : ITtsService
 
         if (_isSpeaking)
         {
-            await StopAsync();
+            //await StopAsync();
         }
 
         try
