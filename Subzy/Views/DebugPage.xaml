@@ -3,150 +3,135 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Subzy.DebugPage"
              Title="Debug">
-    
-    <Grid Padding="20" RowSpacing="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
 
-        <!-- Title -->
-        <Label Grid.Row="0"
+    <ScrollView>
+        <Grid Padding="20" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <Label Grid.Row="0"
                Text="Debug Console" 
                FontSize="32" 
                FontAttributes="Bold"
                TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                HorizontalOptions="Center"/>
 
-        <!-- PNG Files from Downloads -->
-        <Frame Grid.Row="1" BorderColor="LightGray" HasShadow="True" Padding="15">
-            <VerticalStackLayout Spacing="10">
-                <Grid ColumnSpacing="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <Label Grid.Column="0"
+            <!-- PNG Files from Downloads -->
+            <Frame Grid.Row="1" BorderColor="LightGray" HasShadow="False" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0"
                            Text="PNG Files from Downloads" 
                            FontSize="18" 
                            FontAttributes="Bold"
                            VerticalOptions="Center"
                            TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
-                    
-                    <Button Grid.Column="1"
+
+                        <Button Grid.Column="1"
                             Text="Refresh"
                             Command="{Binding LoadPngFilesCommand}"
                             BackgroundColor="Gray"
                             TextColor="White"
                             FontSize="14"
                             Padding="10,5"/>
-                </Grid>
-                
-                <CollectionView ItemsSource="{Binding PngFiles}"
+                    </Grid>
+
+                    <CollectionView ItemsSource="{Binding PngFiles}"
                                 SelectedItem="{Binding SelectedPngFile}"
                                 SelectionMode="Single"
                                 HeightRequest="120">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame Padding="10" 
-                                   Margin="0,2"
-                                   BorderColor="LightGray"
-                                   HasShadow="False">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
                                 <Label Text="{Binding}"
-                                       FontSize="14"
-                                       LineBreakMode="TailTruncation"
-                                       TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}">
+                                    FontSize="14"
+                                    LineBreakMode="TailTruncation"
+                                    TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}">
                                     <Label.Triggers>
                                         <DataTrigger TargetType="Label"
-                                                    Binding="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=SelectedItem}"
-                                                    Value="{Binding}">
+                                                Binding="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=SelectedItem}"
+                                                Value="{Binding}">
                                             <Setter Property="BackgroundColor" Value="LightBlue"/>
                                         </DataTrigger>
                                     </Label.Triggers>
                                 </Label>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
-        </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
 
-        <!-- Selected Image and OCR Result -->
-        <Frame Grid.Row="2" BorderColor="LightGray" HasShadow="True" Padding="15">
-            <Grid ColumnSpacing="15">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Selected Image Display -->
-                <VerticalStackLayout Grid.Column="0" Spacing="10">
-                    <Label Text="Selected Image" 
+            <!-- Selected Image and OCR Result -->
+            <Frame Grid.Row="2" BorderColor="LightGray" HasShadow="True" Padding="15">
+                <Grid ColumnSpacing="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Selected Image Display -->
+                    <VerticalStackLayout Grid.Column="0" Spacing="10">
+                        <Label Text="Selected Image" 
                            FontSize="16" 
                            FontAttributes="Bold"
                            TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
-                    <Frame BorderColor="Gray" 
-                           Padding="5" 
-                           HasShadow="False"
-                           BackgroundColor="Transparent"
-                           HeightRequest="200">
-                        <Image Source="{Binding SelectedImage}"
+                            <Image Source="{Binding SelectedImage}"
                                Aspect="AspectFit"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"/>
-                    </Frame>
-                </VerticalStackLayout>
-                
-                <!-- OCR Result Text -->
-                <VerticalStackLayout Grid.Column="1" Spacing="10">
-                    <Label Text="OCR Result" 
+                    </VerticalStackLayout>
+
+                    <!-- OCR Result Text -->
+                    <VerticalStackLayout Grid.Column="1" Spacing="10">
+                        <Label Text="OCR Result" 
                            FontSize="16" 
                            FontAttributes="Bold"
                            TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
-                    <Frame BorderColor="Gray" 
-                           Padding="10" 
-                           HasShadow="False"
-                           BackgroundColor="Transparent"
-                           HeightRequest="200">
-                        <ScrollView>
-                            <Editor Text="{Binding OcrResultText}"
+                            <ScrollView HeightRequest="200">
+                                <Editor Text="{Binding OcrResultText}"
                                     IsReadOnly="True"
                                     FontSize="14"
                                     TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                                     AutoSize="TextChanges"/>
-                        </ScrollView>
-                    </Frame>
-                </VerticalStackLayout>
-            </Grid>
-        </Frame>
+                            </ScrollView>
+                    </VerticalStackLayout>
+                </Grid>
+            </Frame>
 
-        <!-- Debug Output -->
-        <Frame Grid.Row="3" BorderColor="LightGray" HasShadow="True" Padding="10">
-            <ScrollView>
-                <Label Text="{Binding DebugOutput}"
+            <!-- Debug Output -->
+            <Frame Grid.Row="3" BorderColor="LightGray" HasShadow="True" Padding="10">
+                <ScrollView HeightRequest="200">
+                    <Editor Text="{Binding DebugOutput}"
+                       IsReadOnly="True"
                        FontFamily="Courier"
                        FontSize="12"
                        TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
-                       LineBreakMode="WordWrap"/>
-            </ScrollView>
-        </Frame>
+                       />
+                </ScrollView>
+            </Frame>
 
-        <!-- Control Buttons -->
-        <Grid Grid.Row="4" ColumnSpacing="10" RowSpacing="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Control Buttons -->
+            <Grid Grid.Row="4" ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <Button Grid.Row="0" Grid.Column="0"
+                <Button Grid.Row="0" Grid.Column="0"
                     Text="Test OCR"
                     Command="{Binding TestOcrCommand}"
                     IsEnabled="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"
@@ -154,7 +139,7 @@
                     TextColor="White"
                     FontSize="16"/>
 
-            <Button Grid.Row="0" Grid.Column="1"
+                <Button Grid.Row="0" Grid.Column="1"
                     Text="Test Translation"
                     Command="{Binding TestTranslationCommand}"
                     IsEnabled="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"
@@ -162,7 +147,7 @@
                     TextColor="White"
                     FontSize="16"/>
 
-            <Button Grid.Row="1" Grid.Column="0"
+                <Button Grid.Row="1" Grid.Column="0"
                     Text="Test TTS"
                     Command="{Binding TestTtsCommand}"
                     IsEnabled="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"
@@ -170,13 +155,14 @@
                     TextColor="White"
                     FontSize="16"/>
 
-            <Button Grid.Row="1" Grid.Column="1"
+                <Button Grid.Row="1" Grid.Column="1"
                     Text="View Logs"
                     Command="{Binding ViewLogsCommand}"
                     BackgroundColor="Green"
                     TextColor="White"
                     FontSize="16"/>
-        </Grid>
+            </Grid>
 
-    </Grid>
+        </Grid>
+    </ScrollView>
 </ContentPage>
