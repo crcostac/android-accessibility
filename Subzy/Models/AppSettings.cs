@@ -32,6 +32,11 @@ public class AppSettings
     public string AzureTranslatorRegion { get; set; }
     public string AzureSpeechKey { get; set; }
     public string AzureSpeechRegion { get; set; }
+    
+    // Azure OpenAI Configuration
+    public string AzureOpenAIEndpoint { get; set; }
+    public string AzureOpenAIKey { get; set; }
+    public string AzureOpenAIDeployment { get; set; }
 
     // Resource Management
     public bool AdaptiveScheduling { get; set; }

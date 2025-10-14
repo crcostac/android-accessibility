@@ -41,6 +41,9 @@ public static class Constants
         "ro-RO-AlinaNeural",
         "ro-RO-EmilNeural"
     };
+    
+    // Azure OpenAI
+    public const string DefaultAzureOpenAIDeployment = "gpt-4o";
 
     // Resource Management
     public const int DefaultLowBatteryThreshold = 20;
