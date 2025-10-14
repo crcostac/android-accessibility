@@ -38,7 +38,36 @@ Subzy requires Azure Cognitive Services API keys for translation and text-to-spe
 3. Copy one of the keys (KEY 1 or KEY 2)
 4. Note the region (e.g., "westeurope")
 
-## Step 3: Create a Speech Services Resource
+## Step 3: Create an Azure OpenAI Resource (Recommended)
+
+Azure OpenAI provides enhanced translation with context awareness, OCR artifact cleanup, and consistent entity translation.
+
+1. In the Azure Portal, click "Create a resource"
+2. Search for "Azure OpenAI"
+3. Click "Create"
+4. Fill in the required information:
+   - **Subscription**: Select your subscription
+   - **Resource Group**: Use the same as Translator or create new
+   - **Region**: Choose a supported region (e.g., East US, West Europe)
+   - **Name**: Enter a unique name (e.g., "subzy-openai")
+   - **Pricing Tier**: Select "Standard S0"
+5. Click "Review + create"
+6. Click "Create"
+
+### Get Azure OpenAI Configuration
+
+1. Once deployment is complete, click "Go to resource"
+2. In the left menu, click "Keys and Endpoint"
+3. Copy one of the keys (KEY 1 or KEY 2)
+4. Copy the Endpoint URL (e.g., "https://subzy-openai.openai.azure.com/")
+5. Go to "Model deployments" in the left menu
+6. Click "Manage Deployments" or "Create"
+7. Deploy a GPT-4 model (e.g., "gpt-4o" or "gpt-4")
+8. Note the deployment name you created
+
+**Note**: Azure OpenAI requires approval. If you don't have access, you can still use the traditional Azure Translator service (see Step 2).
+
+## Step 4: Create a Speech Services Resource
 
 1. In the Azure Portal, click "Create a resource"
 2. Search for "Speech Services" or "Speech"
@@ -59,19 +88,23 @@ Subzy requires Azure Cognitive Services API keys for translation and text-to-spe
 3. Copy one of the keys (KEY 1 or KEY 2)
 4. Note the region (e.g., "westeurope")
 
-## Step 4: Configure Subzy
+## Step 5: Configure Subzy
 
 1. Open the Subzy app on your Android device
 2. Complete the onboarding flow
 3. Navigate to **Settings**
 4. Scroll down to "Azure Configuration"
 5. Enter your API keys:
-   - **Translator API Key**: Paste the key from Step 2
-   - **Speech API Key**: Paste the key from Step 3
+   - **Azure OpenAI Endpoint**: Paste the endpoint URL from Step 3 (if using Azure OpenAI)
+   - **Azure OpenAI Key**: Paste the key from Step 3 (if using Azure OpenAI)
+   - **Azure OpenAI Deployment**: Enter the deployment name from Step 3 (e.g., "gpt-4o")
+   - **Speech API Key**: Paste the key from Step 4
 6. Verify the region matches your Azure resources (e.g., "westeurope")
 7. Tap "Save Settings"
 
-## Step 5: Test Your Configuration
+**Note**: If you're using traditional Azure Translator instead of Azure OpenAI, enter the Translator API Key instead.
+
+## Step 6: Test Your Configuration
 
 1. Go to the **Debug** page in Subzy
 2. Enter some test text (e.g., "Hello, this is a test")
@@ -93,11 +126,19 @@ If both tests succeed, you're all set!
 - Approximately 150,000 characters of speech
 - Neural voices: 0.5 million characters per month
 
+**Azure OpenAI**:
+- Standard S0: Pay-per-use
+- GPT-4: ~$0.03 per 1K tokens (~750 words)
+- For subtitle translation: ~$0.10-0.20 per hour of video
+
 ### Cost Estimates
 
 For typical usage (2 hours of video per day with subtitles):
-- Translation: ~10,000 characters/hour = 600,000 characters/month
+- **Using Azure Translator**: ~10,000 characters/hour = 600,000 characters/month
+- **Using Azure OpenAI**: ~$0.10-0.20/hour = $6-12/month for translation
 - TTS: ~10,000 characters/hour = 600,000 characters/month
+
+**Recommendation**: Use Azure OpenAI for better quality translation with context awareness and OCR cleanup. The extra cost is minimal compared to the improved accuracy.
 
 **Monthly Cost** (if exceeding free tier):
 - Translation: $10 per million characters
@@ -143,6 +184,7 @@ For typical usage (2 hours of video per day with subtitles):
 
 ## Additional Resources
 
+- [Azure OpenAI Documentation](https://learn.microsoft.com/azure/ai-services/openai/)
 - [Azure Translator Documentation](https://docs.microsoft.com/azure/cognitive-services/translator/)
 - [Azure Speech Services Documentation](https://docs.microsoft.com/azure/cognitive-services/speech-service/)
 - [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculator/)
