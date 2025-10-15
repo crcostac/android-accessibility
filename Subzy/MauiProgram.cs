@@ -37,6 +37,7 @@ public static class MauiProgram
 #endif
         builder.Services.AddSingleton<ITranslationService, AzureOpenAITranslationService>();
 		builder.Services.AddSingleton<ITtsService, AzureTtsService>();
+		builder.Services.AddSingleton<ISpeechToSpeechService, SpeechToSpeechService>();
 		builder.Services.AddSingleton<ForegroundAppDetector>();
 		builder.Services.AddSingleton<ColorProfileManager>();
 		builder.Services.AddSingleton<ColorPickerService>();
