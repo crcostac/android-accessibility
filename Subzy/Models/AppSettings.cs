@@ -38,6 +38,11 @@ public class AppSettings
     public string AzureOpenAIKey { get; set; }
     public string AzureOpenAIDeployment { get; set; }
 
+    // Speech-to-Speech Translation Settings
+    public bool IsSpeechToSpeechEnabled { get; set; }
+    public string SpeechToSpeechSourceLanguage { get; set; } // null for auto-detect
+    public string SpeechToSpeechTargetLanguage { get; set; }
+
     // Resource Management
     public bool AdaptiveScheduling { get; set; }
     public int LowBatteryThreshold { get; set; }

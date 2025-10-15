@@ -44,6 +44,12 @@ public static class Constants
     
     // Azure OpenAI
     public const string DefaultAzureOpenAIDeployment = "gpt-4o";
+    public const string DefaultAzureOpenAIRealtimeDeployment = "gpt-4o-mini-realtime";
+
+    // Speech-to-Speech
+    public const int DefaultAudioSampleRate = 16000;
+    public const int DefaultAudioChannels = 1;
+    public const int DefaultAudioBufferSize = 3200; // 100ms at 16kHz, 16-bit
 
     // Resource Management
     public const int DefaultLowBatteryThreshold = 20;

@@ -40,7 +40,7 @@ Subzy requires Azure Cognitive Services API keys for translation and text-to-spe
 
 ## Step 3: Create an Azure OpenAI Resource (Recommended)
 
-Azure OpenAI provides enhanced translation with context awareness, OCR artifact cleanup, and consistent entity translation.
+Azure OpenAI provides enhanced translation with context awareness, OCR artifact cleanup, and consistent entity translation. It also powers the experimental speech-to-speech translation feature.
 
 1. In the Azure Portal, click "Create a resource"
 2. Search for "Azure OpenAI"
@@ -62,10 +62,31 @@ Azure OpenAI provides enhanced translation with context awareness, OCR artifact 
 4. Copy the Endpoint URL (e.g., "https://subzy-openai.openai.azure.com/")
 5. Go to "Model deployments" in the left menu
 6. Click "Manage Deployments" or "Create"
-7. Deploy a GPT-4 model (e.g., "gpt-4o" or "gpt-4")
+7. Deploy a GPT-4 model (e.g., "gpt-4o" or "gpt-4") for translation
 8. Note the deployment name you created
 
 **Note**: Azure OpenAI requires approval. If you don't have access, you can still use the traditional Azure Translator service (see Step 2).
+
+### Deploy gpt-4o-mini-realtime Model (Optional - For Speech-to-Speech Translation)
+
+For the experimental speech-to-speech translation feature:
+
+1. In Azure OpenAI Studio, go to "Deployments"
+2. Click "Create new deployment"
+3. Select "gpt-4o-mini-realtime" model
+4. Enter a deployment name (e.g., "gpt-4o-mini-realtime")
+5. Configure deployment settings:
+   - **Model version**: Latest available
+   - **Deployment type**: Standard
+6. Click "Create"
+7. Note the deployment name for use in the app
+
+**Important**: The gpt-4o-mini-realtime model is required for real-time speech-to-speech translation via WebSocket. This feature enables:
+- Real-time audio capture from microphone
+- Streaming speech-to-speech translation
+- Low-latency audio responses
+
+**Availability**: The realtime API is currently in preview and may not be available in all regions. Check the Azure OpenAI documentation for supported regions and model availability.
 
 ## Step 4: Create a Speech Services Resource
 
@@ -189,6 +210,142 @@ For typical usage (2 hours of video per day with subtitles):
 - [Azure Speech Services Documentation](https://docs.microsoft.com/azure/cognitive-services/speech-service/)
 - [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculator/)
 - [Supported Languages](https://docs.microsoft.com/azure/cognitive-services/translator/language-support)
+
+## Speech-to-Speech Translation Setup (Experimental)
+
+The speech-to-speech translation feature allows real-time audio translation using Azure OpenAI's gpt-4o-mini-realtime model.
+
+### Prerequisites
+
+1. Azure OpenAI resource with gpt-4o-mini-realtime deployment (see Step 3 above)
+2. Android device with microphone (RECORD_AUDIO permission already configured)
+3. Stable internet connection for WebSocket communication
+
+### Configuration
+
+The speech-to-speech service uses the same Azure OpenAI credentials as the translation service:
+
+```csharp
+// Configuration is loaded from AppSettings
+var config = new SpeechToSpeechConfig
+{
+    AzureOpenAIEndpoint = "https://your-resource.openai.azure.com/",
+    AzureOpenAIKey = "your-api-key",
+    ModelDeploymentName = "gpt-4o-mini-realtime",
+    SourceLanguage = null,  // Auto-detect
+    TargetLanguage = "ro",  // Romanian
+    AudioSampleRate = 16000,
+    AudioChannels = 1,
+    BufferSizeInBytes = 3200
+};
+```
+
+### Usage Example
+
+```csharp
+// Inject the service
+public class MyService
+{
+    private readonly ISpeechToSpeechService _speechService;
+
+    public MyService(ISpeechToSpeechService speechService)
+    {
+        _speechService = speechService;
+        
+        // Subscribe to events
+        _speechService.TranslatedTextReceived += OnTranslatedText;
+        _speechService.AudioResponseReceived += OnAudioResponse;
+        _speechService.ErrorOccurred += OnError;
+    }
+
+    public async Task StartTranslation()
+    {
+        // Start speech-to-speech translation
+        // Source: auto-detect, Target: Romanian
+        await _speechService.StartAsync(null, "ro");
+    }
+
+    public async Task StopTranslation()
+    {
+        await _speechService.StopAsync();
+    }
+
+    private void OnTranslatedText(object sender, string text)
+    {
+        // Handle translated text
+        Console.WriteLine($"Translation: {text}");
+    }
+
+    private void OnAudioResponse(object sender, byte[] audioData)
+    {
+        // Handle audio response for playback
+        // Audio format: PCM 16-bit, 16kHz, mono
+    }
+
+    private void OnError(object sender, Exception ex)
+    {
+        // Handle errors
+        Console.WriteLine($"Error: {ex.Message}");
+    }
+}
+```
+
+### Audio Specifications
+
+- **Input Format**: PCM 16-bit, 16kHz, mono
+- **Output Format**: PCM 16-bit, 16kHz, mono
+- **Buffer Size**: 3200 bytes (100ms at 16kHz)
+- **Voice Activity Detection**: Server-side VAD with 500ms silence detection
+
+### Performance Considerations
+
+- **Latency**: ~500-1000ms for speech detection + translation
+- **Battery Impact**: Moderate (continuous microphone and network usage)
+- **Network Usage**: ~32 KB/s upload + variable download depending on response length
+- **Cost**: Usage-based pricing through Azure OpenAI (more expensive than text translation)
+
+### Troubleshooting
+
+#### "Speech-to-Speech service not configured"
+- Verify Azure OpenAI endpoint, key, and deployment name are set
+- Ensure gpt-4o-mini-realtime model is deployed
+- Check that the deployment name matches exactly
+
+#### Audio capture fails
+- Verify RECORD_AUDIO permission is granted
+- Check microphone is not in use by another app
+- Test on a physical device (emulator microphone may not work)
+
+#### WebSocket connection fails
+- Verify internet connection is stable
+- Check firewall/proxy settings allow WebSocket connections
+- Ensure Azure OpenAI endpoint URL is correct (should use wss:// protocol internally)
+
+#### No translation output
+- Speak clearly into the microphone
+- Check microphone volume and placement
+- Verify source language is supported
+- Monitor logs for API errors or rate limiting
+
+### Limitations
+
+1. **Preview Feature**: The realtime API is in preview and subject to changes
+2. **Regional Availability**: Not all Azure regions support the realtime model
+3. **Cost**: Higher cost than text-based translation
+4. **Platform Support**: Currently Android-only (microphone access)
+5. **Network Dependency**: Requires stable internet connection
+
+### Cost Estimation
+
+For speech-to-speech translation:
+- **Input Audio**: ~$0.06 per hour of audio processing
+- **Output Audio**: ~$0.24 per hour of generated audio
+- **Tokens**: Additional charges for text processing
+
+For typical usage (30 minutes/day):
+- Monthly cost: ~$4-8 depending on usage patterns
+
+Compare to text translation: ~$0.10-0.20/hour
 
 ## Support
 
