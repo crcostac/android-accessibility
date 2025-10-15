@@ -4,7 +4,7 @@
              x:Class="Subzy.MainPage"
              Title="Subzy">
 
-    <Grid Padding="20" RowSpacing="20">
+    <Grid Padding="20" RowSpacing="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -22,19 +22,17 @@
             <Label Text="Subtitle Reader &amp; Translator" 
                    FontSize="18"
                    HorizontalOptions="Center"
-                   TextColor="Gray"/>
+                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"/>
         </VerticalStackLayout>
 
         <!-- Status Area -->
         <VerticalStackLayout Grid.Row="1" 
-                            Spacing="20"
-                            VerticalOptions="Center">
+                             Spacing="15"
+                             VerticalOptions="Center">
             
-            <Frame BorderColor="LightGray" 
-                   HasShadow="True" 
-                   Padding="20"
+            <Frame Padding="20"
                    BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToBackgroundConverter}}">
-                <VerticalStackLayout Spacing="15">
+                <VerticalStackLayout Spacing="12">
                     <Label Text="{Binding StatusText}"
                            FontSize="24"
                            FontAttributes="Bold"
@@ -51,9 +49,7 @@
             </Frame>
 
             <!-- Last Processed Subtitle -->
-            <Frame BorderColor="LightGray" 
-                   HasShadow="True" 
-                   Padding="15">
+            <Frame>
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Last Processed Subtitle" 
                            FontSize="18" 
@@ -62,14 +58,14 @@
                     <Label Text="{Binding LastProcessedText}"
                            FontSize="16"
                            LineBreakMode="WordWrap"
-                           TextColor="DarkSlateGray"/>
+                           TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray300}}"/>
                 </VerticalStackLayout>
             </Frame>
 
         </VerticalStackLayout>
 
         <!-- Control Buttons -->
-        <VerticalStackLayout Grid.Row="2" Spacing="15">
+        <VerticalStackLayout Grid.Row="2" Spacing="12">
             
             <!-- Main Toggle Button -->
             <Button Text="{Binding IsServiceRunning, Converter={StaticResource BoolToToggleTextConverter}}"

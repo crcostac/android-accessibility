@@ -64,7 +64,7 @@ public class AudioCaptureService : IDisposable
         {
             // Get minimum buffer size
             var minBufferSize = AudioRecord.GetMinBufferSize(_sampleRate, _channelConfig, _audioFormat);
-            if (minBufferSize == (int)RecordState.InvalidOperation)
+            if (minBufferSize < 0)
             {
                 throw new InvalidOperationException("Unable to get minimum buffer size for audio recording");
             }
@@ -178,7 +178,7 @@ public class AudioCaptureService : IDisposable
                 {
                     _logger.Warning($"Error reading audio data: {readBytes}");
                     
-                    if (readBytes == (int)RecordState.InvalidOperation)
+                    if (readBytes == (int)RecordStatus.ErrorInvalidOperation)
                     {
                         throw new InvalidOperationException("AudioRecord is in invalid state");
                     }

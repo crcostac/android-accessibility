@@ -385,6 +385,14 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
+
+    <Style TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray500}}" />
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="HasShadow" Value="False"/>
+        <Setter Property="Padding" Value="15"/>
+    </Style>
   
     <!--
     <Style TargetType="TitleBar">

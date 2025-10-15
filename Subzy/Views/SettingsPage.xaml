@@ -5,18 +5,18 @@
              Title="Settings">
     
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="20">
+        <VerticalStackLayout Padding="20" Spacing="12">
             
             <Label Text="Settings" 
                    FontSize="32" 
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
                    HorizontalOptions="Center" 
-                   Margin="0,0,0,20"/>
+                   Margin="0,0,0,10"/>
 
             <!-- Service Configuration -->
-            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
-                <VerticalStackLayout Spacing="15">
+            <Frame>
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Service Configuration" 
                            FontSize="20" 
                            FontAttributes="Bold"
@@ -40,8 +40,8 @@
             </Frame>
 
             <!-- Image Processing -->
-            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
-                <VerticalStackLayout Spacing="15">
+            <Frame>
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Image Processing" 
                            FontSize="20" 
                            FontAttributes="Bold"
@@ -78,8 +78,8 @@
             </Frame>
 
             <!-- Translation Settings -->
-            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
-                <VerticalStackLayout Spacing="15">
+            <Frame>
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Translation" 
                            FontSize="20" 
                            FontAttributes="Bold"
@@ -101,8 +101,8 @@
             </Frame>
 
             <!-- TTS Settings -->
-            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
-                <VerticalStackLayout Spacing="15">
+            <Frame>
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Text-to-Speech" 
                            FontSize="20" 
                            FontAttributes="Bold"
@@ -124,15 +124,15 @@
             </Frame>
 
             <!-- Azure Configuration -->
-            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
-                <VerticalStackLayout Spacing="15">
+            <Frame>
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Azure Configuration" 
                            FontSize="20" 
                            FontAttributes="Bold"
                            TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
                     <Label Text="Get your API keys from Azure Portal" 
                            FontSize="12" 
-                           TextColor="Gray"/>
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"/>
                     
                     <Label Text="Translator API Key"
                            TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
@@ -150,14 +150,14 @@
                     
                     <Button Text="Open Azure Portal"
                             Command="{Binding OpenAzurePortalCommand}"
-                            BackgroundColor="LightBlue"
-                            TextColor="Black"/>
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"/>
                 </VerticalStackLayout>
             </Frame>
 
             <!-- Resource Management -->
-            <Frame BorderColor="LightGray" HasShadow="True" Padding="15">
-                <VerticalStackLayout Spacing="15">
+            <Frame>
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Resource Management" 
                            FontSize="20" 
                            FontAttributes="Bold"
@@ -187,7 +187,7 @@
             </Frame>
 
             <!-- Action Buttons -->
-            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,20,0,0">
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,10,0,0">
                 <Button Text="Save Settings"
                         Command="{Binding SaveSettingsCommand}"
                         BackgroundColor="Green"
@@ -206,17 +206,17 @@
             </HorizontalStackLayout>
 
             <!-- Test Buttons -->
-            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,0,0,10">
                 <Button Text="Test Translation"
                         Command="{Binding TestTranslationCommand}"
-                        BackgroundColor="LightBlue"
-                        TextColor="Black"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
                         WidthRequest="150"/>
                 
                 <Button Text="Test TTS"
                         Command="{Binding TestTtsCommand}"
-                        BackgroundColor="LightBlue"
-                        TextColor="Black"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
                         WidthRequest="150"/>
             </HorizontalStackLayout>
 

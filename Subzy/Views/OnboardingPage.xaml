@@ -13,8 +13,8 @@
 
         <!-- Content Area -->
         <VerticalStackLayout Grid.Row="0" 
-                            Spacing="30"
-                            VerticalOptions="Center">
+                             Spacing="25"
+                             VerticalOptions="Center">
             
             <Label Text="{Binding CurrentStepTitle}"
                    FontSize="32"
@@ -32,8 +32,8 @@
 
             <!-- Progress Indicator -->
             <HorizontalStackLayout Spacing="10" 
-                                  HorizontalOptions="Center"
-                                  Margin="0,20,0,0">
+                                   HorizontalOptions="Center"
+                                   Margin="0,15,0,0">
                 <Label Text="{Binding CurrentStep, StringFormat='Step {0}'}"
                        FontSize="16"
                        TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
@@ -46,10 +46,7 @@
             </HorizontalStackLayout>
 
             <!-- Permission Status (visible only on permissions step) -->
-            <Frame BorderColor="LightGray" 
-                   HasShadow="True" 
-                   Padding="15"
-                   IsVisible="{Binding CurrentStep, Converter={StaticResource IntToBoolConverter}, ConverterParameter=3}">
+            <Frame IsVisible="{Binding CurrentStep, Converter={StaticResource IntToBoolConverter}, ConverterParameter=3}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Permission Status" 
                            FontSize="18" 
@@ -82,7 +79,7 @@
 
                     <Button Text="Request Permissions"
                             Command="{Binding RequestPermissionsCommand}"
-                            BackgroundColor="Blue"
+                            BackgroundColor="{StaticResource Primary}"
                             TextColor="White"
                             Margin="0,10,0,0"/>
                 </VerticalStackLayout>
@@ -92,9 +89,9 @@
 
         <!-- Navigation Buttons -->
         <HorizontalStackLayout Grid.Row="1" 
-                              Spacing="10"
-                              HorizontalOptions="Center"
-                              Margin="0,20,0,20">
+                               Spacing="10"
+                               HorizontalOptions="Center"
+                               Margin="0,15,0,15">
             
             <Button Text="Previous"
                     Command="{Binding PreviousStepCommand}"
