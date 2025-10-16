@@ -234,7 +234,6 @@ public class ScreenCaptureService : Service
             {
                 using (bitmap)
                 {
-                    LoggingService.SaveBitmapToPNG(bitmap, "screenshot");
                     await _orchestrator.ProcessScreenshotAsync(bitmap);
                     bitmap.Recycle();
                 }

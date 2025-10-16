@@ -131,7 +131,7 @@ public class LoggingService : ILoggingService
         }
     }
 
-    public static void SaveBitmapToPNG(Android.Graphics.Bitmap bitmap, string filePrefix)
+    public static void SaveBitmapToPNG(Android.Graphics.Bitmap bitmap, string fileName)
     {
         try
         {
@@ -141,7 +141,7 @@ public class LoggingService : ILoggingService
             File.WriteAllBytes(System.IO.Path.Combine(
                 global::Android.OS.Environment.ExternalStorageDirectory!.AbsolutePath,
                 "Download",
-                $"{filePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.png"),
+                fileName),
                 pngBytes);
         }
         catch (Exception ex)

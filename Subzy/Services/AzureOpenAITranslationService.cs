@@ -45,7 +45,7 @@ public class AzureOpenAITranslationService : ITranslationService
             
             if (string.IsNullOrWhiteSpace(settings.AzureOpenAIKey) || 
                 string.IsNullOrWhiteSpace(settings.AzureOpenAIEndpoint) ||
-                string.IsNullOrWhiteSpace(settings.AzureOpenAIDeployment))
+                string.IsNullOrWhiteSpace(settings.AzureOpenAITranslationDeployment))
             {
                 _logger.Warning("Azure OpenAI not fully configured");
                 IsConfigured = false;
@@ -54,7 +54,7 @@ public class AzureOpenAITranslationService : ITranslationService
 
             var credential = new AzureKeyCredential(settings.AzureOpenAIKey);
             _client = new AzureOpenAIClient(new Uri(settings.AzureOpenAIEndpoint), credential);
-            _chatClient = _client.GetChatClient(settings.AzureOpenAIDeployment);
+            _chatClient = _client.GetChatClient(settings.AzureOpenAITranslationDeployment);
             
             IsConfigured = true;
             _logger.Info("Azure OpenAI translation service initialized");
@@ -141,34 +141,37 @@ public class AzureOpenAITranslationService : ITranslationService
         var targetLangName = GetLanguageName(targetLanguage);
         
         return $@"You are a specialized subtitle translator for streaming content. Your task is to translate subtitles to {targetLangName}.
+Always aim to produce natural, fluent translations suitable for subtitles, consistent with the original tone and style (formal, casual, emotional, etc.).
+The text provided comes from a screenshot OCR process, so it may contain errors and artifacts. 
+In case of streaming subtitles, the text from the current screenshot will have an overlap with the previous text, and might be fragmented at the end.
 
 IMPORTANT RULES:
-1. ONLY translate the current subtitle text provided in the user message. Do NOT include previous subtitles in your response.
-2. The text comes directly from OCR and may contain artifacts. Clean up common OCR errors such as:
+1. Translate the current subtitle text provided in the user message. Do NOT include previous subtitles in your response.
+2. If the end of the subtitle seems incomplete, pause at the most natural break (comma, period, etc.) and wait for the next subtitle to continue. 
+3. De-duplicate overlap with the previous subtitle, and continue translating from your last output. DO NOT repeat previously translated text.
+
+4. The text comes directly from OCR and may contain artifacts. Clean up common OCR errors such as:
    - Random special characters (|, ~, `, etc.)
    - Broken words or extra spaces
    - Misrecognized characters (0 vs O, 1 vs I/l, etc.)
    - Doubled letters or punctuation
 
-3. Use the chat history (previous subtitles) ONLY for context to:
+5. Use the chat history (previous subtitles) for context to:
    - Understand the narrative flow
    - Maintain consistent translation of character names
    - Maintain consistent translation of place names
    - Maintain consistent translation of product/brand names
    - Understand pronouns and references
 
-4. Track and maintain a consistent mapping for:
+6. Track and maintain a consistent mapping for:
    - Character names (translate or keep original based on common practice)
    - Place names (translate or keep original based on common practice)
    - Product/brand names (usually keep original)
    - Technical terms
 
-5. Keep the translation natural and appropriate for spoken dialogue.
-6. Preserve the tone and style of the original (formal, casual, emotional, etc.).
-7. Your response should contain ONLY the translated text of the current subtitle, nothing else.
-8. Do not add explanations, notes, or metadata.
-
-Remember: Previous messages provide context, but you must ONLY translate and return the current subtitle text.";
+7. Your response should contain ONLY the translated text of the current subtitle, nothing else. Do not add explanations, notes, or metadata.
+8. If there is no text to translate (empty or just OCR artifacts), respond with an empty string.
+";
     }
 
     private string GetLanguageName(string languageCode)

@@ -46,7 +46,12 @@ public class SettingsService
                 AzureTranslatorRegion = Preferences.Get(nameof(AppSettings.AzureTranslatorRegion), "global"),
                 AzureSpeechKey = Preferences.Get(nameof(AppSettings.AzureSpeechKey), ""),
                 AzureSpeechRegion = Preferences.Get(nameof(AppSettings.AzureSpeechRegion), "italynorth"),
-                
+
+                AzureOpenAIEndpoint = Preferences.Get(nameof(AppSettings.AzureOpenAIEndpoint), ""),
+                AzureOpenAIKey = Preferences.Get(nameof(AppSettings.AzureOpenAIKey), ""),
+                AzureOpenAITranslationDeployment = Preferences.Get(nameof(AppSettings.AzureOpenAITranslationDeployment), "gpt-4.1"),
+                AzureOpenAISpeechDeployment = Preferences.Get(nameof(AppSettings.AzureOpenAISpeechDeployment), "gpt-4o-mini-realtime"),
+
                 AdaptiveScheduling = Preferences.Get(nameof(AppSettings.AdaptiveScheduling), true),
                 LowBatteryThreshold = Preferences.Get(nameof(AppSettings.LowBatteryThreshold), 20),
                 
@@ -55,7 +60,7 @@ public class SettingsService
                 MaxColorsPerApp = Preferences.Get(nameof(AppSettings.MaxColorsPerApp), 5),
                 SubtitleColorTolerance = Preferences.Get(nameof(AppSettings.SubtitleColorTolerance), 30),
                 MinSameColorNeighbors = Preferences.Get(nameof(AppSettings.MinSameColorNeighbors), 2),
-                UsePerceptualHashing = Preferences.Get(nameof(AppSettings.UsePerceptualHashing), true),
+                UsePerceptualHashing = Preferences.Get(nameof(AppSettings.UsePerceptualHashing), false),
                 HashSimilarityThreshold = Preferences.Get(nameof(AppSettings.HashSimilarityThreshold), 8)
             };
 

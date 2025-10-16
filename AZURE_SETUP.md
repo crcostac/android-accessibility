@@ -358,3 +358,8 @@ If you encounter issues:
 ---
 
 For more help, see the [README](README.md) or create an issue on GitHub.
+
+cd C:\Temp\screenshots
+adb shell ls -l /storage/emulated/0/Download
+adb pull /storage/emulated/0/Download/
+adb shell rm /storage/emulated/0/Download/*.png

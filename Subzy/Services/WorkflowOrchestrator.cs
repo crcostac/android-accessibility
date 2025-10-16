@@ -20,6 +20,7 @@ public class WorkflowOrchestrator
     private readonly ITtsService _ttsService;
     private readonly ForegroundAppDetector _appDetector;
     private readonly ColorProfileManager _colorProfileManager;
+    private SubtitleData _lastSubtitleData = new();
 
     public WorkflowOrchestrator(
         ILoggingService logger,
@@ -74,7 +75,7 @@ public class WorkflowOrchestrator
                 appPackageName ?? "default", 
                 appDisplayName);
             
-            _logger.Debug($"Foreground app: {appDisplayName} ({stopwatch.ElapsedMilliseconds}ms)");
+            _logger.Info($"Foreground app: {appDisplayName} ({stopwatch.ElapsedMilliseconds}ms)");
 
             // Stage 2: Color Filter + Noise Removal (~20-25ms)
             stopwatch.Restart();
@@ -85,9 +86,11 @@ public class WorkflowOrchestrator
                 settings.MinSameColorNeighbors
             );
             result.ProcessingTime = stopwatch.Elapsed;
-            _logger.Debug($"Color filtering completed in {stopwatch.ElapsedMilliseconds}ms");
+            _logger.Info($"Color filtering completed in {stopwatch.ElapsedMilliseconds}ms");
 
-            LoggingService.SaveBitmapToPNG(bitmapFiltered, "filtered");
+            string bitmapPrefix = $"{DateTime.Now:mmss}.png";
+            LoggingService.SaveBitmapToPNG(bitmapScreenshot, $"{bitmapPrefix}_screenshot.png");
+            LoggingService.SaveBitmapToPNG(bitmapFiltered, $"{bitmapPrefix}_filtered.png");
 
             // Stage 3: Perceptual Hashing (~10ms)
             stopwatch.Restart();
@@ -99,7 +102,7 @@ public class WorkflowOrchestrator
 
             if (!hasChanged)
             {
-                _logger.Debug("No content change detected, skipping OCR");
+                _logger.Info("No content change detected, skipping OCR");
                 result.ProcessingDuration = overallStopwatch.Elapsed;
                 _logger.Info($"Total pipeline time (no OCR): {result.ProcessingDuration.TotalMilliseconds}ms");
                 return result;
@@ -109,13 +112,22 @@ public class WorkflowOrchestrator
             stopwatch.Restart();
             var extractedText = await _ocrService.ExtractTextAsync(bitmapFiltered);
             result.OcrTime = stopwatch.Elapsed;
-            _logger.Debug($"OCR completed in {stopwatch.ElapsedMilliseconds}ms, extracted text: {extractedText}");
+            _logger.Info($"OCR completed in {stopwatch.ElapsedMilliseconds}ms");
 
             if (string.IsNullOrWhiteSpace(extractedText))
             {
-                _logger.Debug("No text extracted from image");
+                _logger.Info("No text extracted from image");
                 result.ProcessingDuration = overallStopwatch.Elapsed;
-                _logger.Info($"Total pipeline time (no text): {result.ProcessingDuration.TotalMilliseconds}ms");
+                _logger.Info($"Total pipeline time (no new text): {result.ProcessingDuration.TotalMilliseconds}ms");
+                _lastSubtitleData = new(); // Reset last subtitle data, to allow same subtitle after a blank screen
+                return result;
+            }
+            
+            if (_lastSubtitleData.OriginalText == extractedText)
+            {
+                _logger.Info("Same text extracted from image");
+                result.ProcessingDuration = overallStopwatch.Elapsed;
+                _logger.Info($"Total pipeline time (same text): {result.ProcessingDuration.TotalMilliseconds}ms");
                 return result;
             }
 
@@ -125,6 +137,7 @@ public class WorkflowOrchestrator
                 OriginalText = extractedText,
                 Timestamp = DateTime.Now
             };
+            _lastSubtitleData = subtitleData;
 
             // Stage 5: Translation & TTS
             // Translate if enabled
@@ -141,7 +154,7 @@ public class WorkflowOrchestrator
                 subtitleData.DetectedLanguage = detectedLanguage;
                 subtitleData.WasTranslated = true;
                 
-                _logger.Info($"Translation completed in {stopwatch.ElapsedMilliseconds}ms: {detectedLanguage} -> {settings.TargetLanguage}");
+                _logger.Info($"Translation completed in {stopwatch.ElapsedMilliseconds}ms:\noriginal text={extractedText}\ntranslatedText={translatedText}");
             }
             else
             {

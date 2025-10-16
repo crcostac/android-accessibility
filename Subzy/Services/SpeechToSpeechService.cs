@@ -74,7 +74,7 @@ public class SpeechToSpeechService : ISpeechToSpeechService
             {
                 AzureOpenAIEndpoint = settings.AzureOpenAIEndpoint,
                 AzureOpenAIKey = settings.AzureOpenAIKey,
-                ModelDeploymentName = "gpt-4o-mini-realtime",
+                ModelDeploymentName = settings.AzureOpenAISpeechDeployment,
                 TargetLanguage = settings.TargetLanguage
             };
 
