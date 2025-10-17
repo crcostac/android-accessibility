@@ -55,7 +55,7 @@ public class PermissionHelper
             // Platform-specific permissions (screen capture, accessibility) are handled separately
             
             _logger.Info("Permission request initiated");
-            return true;
+            return await Task.FromResult(true);
         }
         catch (Exception ex)
         {
@@ -71,17 +71,21 @@ public class PermissionHelper
     {
         return permissionType switch
         {
-            "ScreenCapture" => "Screen capture permission is required to read subtitles from your screen. " +
-                              "This allows Subzy to take periodic screenshots to extract subtitle text.",
+            "ScreenCapture" => "Screen capture permission is required to read subtitles from your screen and capture audio from streaming apps. " +
+                              "This allows Subzy to take periodic screenshots to extract subtitle text and optionally capture audio for speech-to-speech translation.",
             
             "Accessibility" => "Accessibility permission may be required for enhanced screen reading capabilities. " +
                               "This is optional but can improve functionality.",
             
             "Internet" => "Internet access is required to use cloud-based translation and text-to-speech services. " +
-                         "Your subtitle text will be securely transmitted to Azure for processing.",
+                         "Your subtitle text and audio will be securely transmitted to Azure for processing.",
             
             "ForegroundService" => "Foreground service permission allows Subzy to run in the background " +
-                                  "while you watch videos, ensuring continuous subtitle reading.",
+                                  "while you watch videos, ensuring continuous subtitle reading and audio translation.",
+            
+            "MediaProjection" => "Media projection permission allows Subzy to capture both screen content and audio from streaming apps. " +
+                                "This is required for both subtitle reading (OCR) and speech-to-speech translation features. " +
+                                "Audio is only captured from media playback (movies, shows), not from system sounds or notifications.",
             
             _ => "This permission is required for Subzy to function properly."
         };

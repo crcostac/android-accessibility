@@ -35,6 +35,12 @@ public class ScreenCaptureService : Service
     private MediaProjectionCallback? _projectionCallback;
     private bool _isRunning;
 
+    /// <summary>
+    /// Gets the current MediaProjection instance for audio capture.
+    /// This allows other services (like SpeechToSpeechService) to use the same MediaProjection for audio playback capture.
+    /// </summary>
+    public static MediaProjection? CurrentMediaProjection { get; private set; }
+
     public const string ActionStart = "com.accessibility.subzy.START_CAPTURE";
     public const string ActionStop = "com.accessibility.subzy.STOP_CAPTURE";
     public const string ActionPickColor = "com.accessibility.subzy.PICK_COLOR";
@@ -124,6 +130,10 @@ public class ScreenCaptureService : Service
                 return;
             }
 
+            // Make MediaProjection available for other services (e.g., audio capture)
+            CurrentMediaProjection = _mediaProjection;
+            _logger?.Info("MediaProjection is now available for audio capture");
+
             // Register callback BEFORE starting capture (required for Android 14+)
             _projectionCallback = new MediaProjectionCallback(this, _logger);
             _mediaProjection.RegisterCallback(_projectionCallback, new Handler(Looper.MainLooper));
@@ -149,6 +159,7 @@ public class ScreenCaptureService : Service
         catch (Exception ex)
         {
             _logger?.Error("Failed to start screen capture", ex);
+            CurrentMediaProjection = null;
             StopSelf();
         }
     }
@@ -318,6 +329,9 @@ public class ScreenCaptureService : Service
         try
         {
             _isRunning = false;
+            
+            // Clear the static MediaProjection reference
+            CurrentMediaProjection = null;
             
             // Dispose and null out timer
             _captureTimer?.Dispose();

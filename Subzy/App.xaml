@@ -16,6 +16,8 @@
             <helpers:BoolToBackgroundConverter x:Key="BoolToBackgroundConverter" />
             <helpers:BoolToToggleTextConverter x:Key="BoolToToggleTextConverter" />
             <helpers:BoolToToggleColorConverter x:Key="BoolToToggleColorConverter" />
+            <helpers:BoolToSpeechToggleTextConverter x:Key="BoolToSpeechToggleTextConverter" />
+            <helpers:BoolToSpeechToggleColorConverter x:Key="BoolToSpeechToggleColorConverter" />
             <helpers:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <helpers:IntToBoolConverter x:Key="IntToBoolConverter" />
             <helpers:StepToButtonTextConverter x:Key="StepToButtonTextConverter" />

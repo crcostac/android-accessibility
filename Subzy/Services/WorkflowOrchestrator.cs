@@ -62,6 +62,12 @@ public class WorkflowOrchestrator
         try
         {
             var settings = _settingsService.LoadSettings();
+            if (!settings.IsTtsEnabled)
+            {
+                // TTS is disabled in settings, skipping processing
+                return result;
+            }
+
             var stopwatch = Stopwatch.StartNew();
 
             // Stage 1: Detect Foreground App (~1ms)
@@ -163,7 +169,7 @@ public class WorkflowOrchestrator
             }
 
             // Speak text if TTS enabled
-            if (settings.IsTtsEnabled && _ttsService.IsConfigured)
+            if (_ttsService.IsConfigured)
             {
                 stopwatch.Restart();
                 var textToSpeak = subtitleData.WasTranslated 

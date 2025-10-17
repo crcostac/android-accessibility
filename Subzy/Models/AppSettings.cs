@@ -37,6 +37,8 @@ public class AppSettings
     public string AzureOpenAIEndpoint { get; set; }
     public string AzureOpenAIKey { get; set; }
     public string AzureOpenAITranslationDeployment { get; set; }
+    public string AzureOpenAISpeechEndpoint { get; set; }
+    public string AzureOpenAISpeechKey { get; set; }
     public string AzureOpenAISpeechDeployment { get; set; }
 
     // Speech-to-Speech Translation Settings

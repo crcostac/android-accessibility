@@ -50,7 +50,13 @@ public class SettingsService
                 AzureOpenAIEndpoint = Preferences.Get(nameof(AppSettings.AzureOpenAIEndpoint), ""),
                 AzureOpenAIKey = Preferences.Get(nameof(AppSettings.AzureOpenAIKey), ""),
                 AzureOpenAITranslationDeployment = Preferences.Get(nameof(AppSettings.AzureOpenAITranslationDeployment), "gpt-4.1"),
-                AzureOpenAISpeechDeployment = Preferences.Get(nameof(AppSettings.AzureOpenAISpeechDeployment), "gpt-4o-mini-realtime"),
+                AzureOpenAISpeechEndpoint = Preferences.Get(nameof(AppSettings.AzureOpenAISpeechEndpoint), ""),
+                AzureOpenAISpeechKey = Preferences.Get(nameof(AppSettings.AzureOpenAISpeechKey), ""),
+                AzureOpenAISpeechDeployment = Preferences.Get(nameof(AppSettings.AzureOpenAISpeechDeployment), "gpt-4o-mini-realtime-preview"),
+
+                IsSpeechToSpeechEnabled = Preferences.Get(nameof(AppSettings.IsSpeechToSpeechEnabled), false),
+                SpeechToSpeechSourceLanguage = Preferences.Get(nameof(AppSettings.SpeechToSpeechSourceLanguage), (string?)null),
+                SpeechToSpeechTargetLanguage = Preferences.Get(nameof(AppSettings.SpeechToSpeechTargetLanguage), "ro"),
 
                 AdaptiveScheduling = Preferences.Get(nameof(AppSettings.AdaptiveScheduling), true),
                 LowBatteryThreshold = Preferences.Get(nameof(AppSettings.LowBatteryThreshold), 20),
@@ -100,6 +106,22 @@ public class SettingsService
             Preferences.Set(nameof(AppSettings.AzureTranslatorRegion), settings.AzureTranslatorRegion);
             Preferences.Set(nameof(AppSettings.AzureSpeechKey), settings.AzureSpeechKey);
             Preferences.Set(nameof(AppSettings.AzureSpeechRegion), settings.AzureSpeechRegion);
+            
+            Preferences.Set(nameof(AppSettings.AzureOpenAIEndpoint), settings.AzureOpenAIEndpoint);
+            Preferences.Set(nameof(AppSettings.AzureOpenAIKey), settings.AzureOpenAIKey);
+            Preferences.Set(nameof(AppSettings.AzureOpenAITranslationDeployment), settings.AzureOpenAITranslationDeployment);
+            Preferences.Set(nameof(AppSettings.AzureOpenAISpeechDeployment), settings.AzureOpenAISpeechDeployment);
+
+            Preferences.Set(nameof(AppSettings.IsSpeechToSpeechEnabled), settings.IsSpeechToSpeechEnabled);
+            if (settings.SpeechToSpeechSourceLanguage != null)
+            {
+                Preferences.Set(nameof(AppSettings.SpeechToSpeechSourceLanguage), settings.SpeechToSpeechSourceLanguage);
+            }
+            else
+            {
+                Preferences.Remove(nameof(AppSettings.SpeechToSpeechSourceLanguage));
+            }
+            Preferences.Set(nameof(AppSettings.SpeechToSpeechTargetLanguage), settings.SpeechToSpeechTargetLanguage);
             
             Preferences.Set(nameof(AppSettings.AdaptiveScheduling), settings.AdaptiveScheduling);
             Preferences.Set(nameof(AppSettings.LowBatteryThreshold), settings.LowBatteryThreshold);

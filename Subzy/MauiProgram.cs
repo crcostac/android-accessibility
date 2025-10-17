@@ -32,6 +32,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ChangeDetectorService>();
 #if ANDROID
         builder.Services.AddSingleton<IOcrService, Platforms.Android.Services.TesseractOcrService>();
+		builder.Services.AddSingleton<Platforms.Android.AudioPlaybackService>();
 #else
 		// No OCR service available for other platforms
 #endif

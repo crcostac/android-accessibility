@@ -8,27 +8,27 @@ public class SpeechToSpeechConfig
     /// <summary>
     /// Azure OpenAI endpoint URL (e.g., "https://your-resource.openai.azure.com/")
     /// </summary>
-    public string AzureOpenAIEndpoint { get; set; } = string.Empty;
+    public string AzureOpenAISpeechEndpoint { get; set; }
 
     /// <summary>
     /// Azure OpenAI API key
     /// </summary>
-    public string AzureOpenAIKey { get; set; } = string.Empty;
+    public string AzureOpenAISpeechKey { get; set; }
 
     /// <summary>
     /// Model deployment name (default: "gpt-4o-mini-realtime")
     /// </summary>
-    public string ModelDeploymentName { get; set; } = "gpt-4o-mini-realtime";
+    public string AzureOpenAISpeechDeployment { get; set; }
 
     /// <summary>
     /// Source language code (null for auto-detect)
     /// </summary>
-    public string? SourceLanguage { get; set; } = null;
+    public string? SourceLanguage { get; set; }
 
     /// <summary>
     /// Target language code (default: "ro" for Romanian)
     /// </summary>
-    public string TargetLanguage { get; set; } = "ro";
+    public string TargetLanguage { get; set; }
 
     /// <summary>
     /// Audio sample rate in Hz (default: 16000)
@@ -51,9 +51,9 @@ public class SpeechToSpeechConfig
     /// <returns>True if the configuration is valid</returns>
     public bool IsValid()
     {
-        return !string.IsNullOrWhiteSpace(AzureOpenAIEndpoint) &&
-               !string.IsNullOrWhiteSpace(AzureOpenAIKey) &&
-               !string.IsNullOrWhiteSpace(ModelDeploymentName) &&
+        return !string.IsNullOrWhiteSpace(AzureOpenAISpeechEndpoint) &&
+               !string.IsNullOrWhiteSpace(AzureOpenAISpeechKey) &&
+               !string.IsNullOrWhiteSpace(AzureOpenAISpeechDeployment) &&
                !string.IsNullOrWhiteSpace(TargetLanguage) &&
                AudioSampleRate > 0 &&
                AudioChannels > 0 &&

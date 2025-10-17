@@ -10,6 +10,7 @@ public partial class MainViewModel
 {
     /// <summary>
     /// Starts the screen capture service by launching the permission activity.
+    /// Also starts Speech-to-Speech if enabled.
     /// </summary>
     partial void StartPlatformService()
     {
@@ -21,6 +22,34 @@ public partial class MainViewModel
             context.StartActivity(intent);
 
             _logger.Info("Launched ScreenCapturePermissionActivity");
+
+            // Start Speech-to-Speech if enabled
+            var settings = _settingsService.LoadSettings();
+            if (settings.IsSpeechToSpeechEnabled && _speechToSpeechService.IsConfigured)
+            {
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _speechToSpeechService.StartAsync(
+                            settings.SpeechToSpeechSourceLanguage,
+                            settings.SpeechToSpeechTargetLanguage
+                        );
+                        
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            IsSpeechToSpeechRunning = true;
+                            SpeechToSpeechStatus = "Speech-to-Speech: Active - Listening...";
+                        });
+
+                        _logger.Info("Speech-to-Speech service started automatically");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("Failed to auto-start Speech-to-Speech", ex);
+                    }
+                });
+            }
         }
         catch (Exception ex)
         {
@@ -37,6 +66,7 @@ public partial class MainViewModel
 
     /// <summary>
     /// Stops the screen capture service by sending a stop intent.
+    /// Also stops Speech-to-Speech if running.
     /// </summary>
     partial void StopPlatformService()
     {
@@ -48,6 +78,30 @@ public partial class MainViewModel
             context.StartService(intent);
 
             _logger.Info("Sent stop intent to ScreenCaptureService");
+
+            // Stop Speech-to-Speech if running
+            if (_speechToSpeechService.IsActive)
+            {
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _speechToSpeechService.StopAsync();
+                        
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            IsSpeechToSpeechRunning = false;
+                            SpeechToSpeechStatus = "Speech-to-Speech: Stopped";
+                        });
+
+                        _logger.Info("Speech-to-Speech service stopped automatically");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("Failed to auto-stop Speech-to-Speech", ex);
+                    }
+                });
+            }
         }
         catch (Exception ex)
         {

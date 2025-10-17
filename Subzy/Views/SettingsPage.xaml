@@ -155,6 +155,76 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <!-- Azure OpenAI Configuration -->
+            <Frame>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Azure OpenAI Configuration" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Label Text="For advanced translation and speech-to-speech features" 
+                           FontSize="12" 
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"/>
+                    
+                    <Label Text="OpenAI Endpoint"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Entry Text="{Binding AzureOpenAIEndpoint}" 
+                           Placeholder="https://your-resource.openai.azure.com/"
+                           FontSize="16"/>
+                    
+                    <Label Text="OpenAI API Key"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Entry Text="{Binding AzureOpenAIKey}" 
+                           IsPassword="True"
+                           Placeholder="Enter Azure OpenAI key"
+                           FontSize="16"/>
+                    
+                    <Label Text="Translation Deployment"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Entry Text="{Binding AzureOpenAITranslationDeployment}" 
+                           Placeholder="e.g., gpt-4"
+                           FontSize="16"/>
+                    
+                    <Label Text="Speech Deployment (Realtime)"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Entry Text="{Binding AzureOpenAISpeechDeployment}" 
+                           Placeholder="e.g., gpt-4o-mini-realtime"
+                           FontSize="16"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Speech-to-Speech Settings -->
+            <Frame>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Speech-to-Speech Translation" 
+                           FontSize="20" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Label Text="Real-time speech translation using Azure OpenAI" 
+                           FontSize="12" 
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"/>
+                    
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Enable Speech-to-Speech" 
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                        <Switch IsToggled="{Binding IsSpeechToSpeechEnabled}" />
+                    </HorizontalStackLayout>
+                    
+                    <Label Text="Source Language (leave empty for auto-detect)"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Entry Text="{Binding SpeechToSpeechSourceLanguage}" 
+                           Placeholder="e.g., en (or empty for auto-detect)"
+                           FontSize="16"/>
+                    
+                    <Label Text="Target Language"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"/>
+                    <Entry Text="{Binding SpeechToSpeechTargetLanguage}" 
+                           Placeholder="e.g., ro for Romanian"
+                           FontSize="16"/>
+                </VerticalStackLayout>
+            </Frame>
+
             <!-- Resource Management -->
             <Frame>
                 <VerticalStackLayout Spacing="10">
@@ -206,19 +276,28 @@
             </HorizontalStackLayout>
 
             <!-- Test Buttons -->
-            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,0,0,10">
-                <Button Text="Test Translation"
-                        Command="{Binding TestTranslationCommand}"
-                        BackgroundColor="{StaticResource Primary}"
-                        TextColor="White"
-                        WidthRequest="150"/>
+            <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,0,0,10">
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Test Translation"
+                            Command="{Binding TestTranslationCommand}"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            WidthRequest="150"/>
+                    
+                    <Button Text="Test TTS"
+                            Command="{Binding TestTtsCommand}"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            WidthRequest="150"/>
+                </HorizontalStackLayout>
                 
-                <Button Text="Test TTS"
-                        Command="{Binding TestTtsCommand}"
+                <Button Text="Test Speech-to-Speech"
+                        Command="{Binding TestSpeechToSpeechCommand}"
                         BackgroundColor="{StaticResource Primary}"
                         TextColor="White"
-                        WidthRequest="150"/>
-            </HorizontalStackLayout>
+                        WidthRequest="310"
+                        HorizontalOptions="Center"/>
+            </VerticalStackLayout>
 
         </VerticalStackLayout>
     </ScrollView>

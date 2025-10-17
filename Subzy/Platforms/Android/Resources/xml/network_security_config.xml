@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Base configuration for all connections -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust system certificates -->
+            <certificates src="system" />
+            <!-- Trust user-installed certificates (for debugging) -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Specific configuration for Azure services -->
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- Azure OpenAI endpoints -->
+        <domain includeSubdomains="true">openai.azure.com</domain>
+        
+        <!-- Azure Cognitive Services endpoints -->
+        <domain includeSubdomains="true">cognitiveservices.azure.com</domain>
+        
+        <!-- General Azure domains -->
+        <domain includeSubdomains="true">azure.com</domain>
+        <domain includeSubdomains="true">azure.net</domain>
+        <domain includeSubdomains="true">azurewebsites.net</domain>
+        
+        <!-- Microsoft domains -->
+        <domain includeSubdomains="true">microsoft.com</domain>
+        
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- Debug configuration (can be removed in production) -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

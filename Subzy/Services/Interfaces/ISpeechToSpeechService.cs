@@ -21,6 +21,11 @@ public interface ISpeechToSpeechService : IDisposable
     Task StopAsync();
 
     /// <summary>
+    /// Reinitializes the service with updated configuration.
+    /// </summary>
+    void Reinitialize();
+
+    /// <summary>
     /// Checks if the service is currently capturing and translating audio.
     /// </summary>
     bool IsActive { get; }

@@ -48,6 +48,17 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <!-- Speech-to-Speech Status -->
+            <Frame Padding="15"
+                   BackgroundColor="{Binding IsSpeechToSpeechRunning, Converter={StaticResource BoolToBackgroundConverter}}">
+                <Label Text="{Binding SpeechToSpeechStatus}"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"/>
+            </Frame>
+
             <!-- Last Processed Subtitle -->
             <Frame>
                 <VerticalStackLayout Spacing="10">
@@ -76,6 +87,16 @@
                     FontSize="22"
                     FontAttributes="Bold"
                     SemanticProperties.Hint="Toggles the subtitle reading service"/>
+
+            <!-- Speech-to-Speech Toggle Button -->
+            <Button Text="{Binding IsSpeechToSpeechRunning, Converter={StaticResource BoolToSpeechToggleTextConverter}}"
+                    Command="{Binding ToggleSpeechToSpeechCommand}"
+                    BackgroundColor="{Binding IsSpeechToSpeechRunning, Converter={StaticResource BoolToSpeechToggleColorConverter}}"
+                    TextColor="White"
+                    HeightRequest="50"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    SemanticProperties.Hint="Toggles the speech-to-speech translation service"/>
 
             <!-- Quick Access Buttons -->
             <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
